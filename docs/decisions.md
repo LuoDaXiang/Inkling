@@ -171,3 +171,49 @@ provider 之前就检查长度，超出直接抛 `too_long`。宁可报错，不
 
 这个分层学自 OpenAI 的 node SDK（`scripts/test` 起本地 mock server）
 和微软 Speech SDK（`run-connection-tests.sh` 与 `run-non-connection-tests.sh` 分开）。
+
+---
+
+## 0010 — Azure TTS 走 REST，不用官方 SDK
+
+**日期**：2026-08-22
+**状态**：已采纳
+
+Azure 有官方 SDK（`microsoft-cognitiveservices-speech-sdk`），Enjoy 用的就是它。
+本项目改用 REST 接口，理由：
+
+1. **零依赖**。Node 自带 fetch，不引入一个几 MB 的包。
+2. **错误直接对上已有的分类器**。REST 返回标准 HTTP 状态码，
+   `classify()` 已经认得；SDK 会把错误包成 `CancellationDetails`，还要再翻译一层。
+3. **fetch 可以注入**。整个 provider 不联网就能测——37 个用例覆盖了
+   401/403/415/429/502/503、网络异常、空响应体，这些用真 SDK 根本制造不出来。
+
+**代价**：REST 拿不到词/句边界的时间戳事件，那需要 SDK 的 WebSocket 通道。
+我们按句合成、按句缓存，暂时不需要句边界。将来做逐词高亮时再评估是否引入 SDK，
+届时只需新增一个实现 `TtsProvider` 的文件，不影响任何已有代码。
+
+接口文档：https://learn.microsoft.com/azure/ai-services/speech-service/rest-text-to-speech
+
+---
+
+## 0011 — SSML 转义由我们自己负责
+
+**日期**：2026-08-22
+**状态**：已采纳
+
+Azure 的 TTS 收的是 SSML（一种 XML），而我们的文本来自用户粘贴或 AI 生成，
+两条路径都不可信。文本里的 `<` `>` `&` 轻则让请求变成非法 XML 被 400 拒掉，
+重则被当成标记执行：
+
+```
+text = '</voice><voice name="zh-CN-XiaoxiaoNeural">被劫持的内容'
+```
+
+微软自己的 SDK 测试里，搜 `&amp;` / `escape` / `injection` 全部零命中——
+它的 SSML 用例用的是写死的合法 XML。这一层没有现成保障，必须自己守。
+
+`src/providers/tts/ssml.ts` 是纯函数：转义五个 XML 特殊字符、移除 XML 1.0
+不允许的控制字符、把音色名解析成语言标记。48 个测试用例，含注入攻击场景。
+
+**顺带**：`maxChars` 默认 3000 是我们自己设的闸门，不是 Azure 的文档限制。
+官方只写了「音频超过 10 分钟会被截断」，没给字符数上限。

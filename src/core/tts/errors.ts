@@ -69,7 +69,8 @@ export function classify(err: unknown): TtsErrorKind {
 
   if (status === 401 || status === 403) return "auth";
   if (status === 402 || status === 429) return "quota";
-  if (status === 400 || status === 422) return "rejected";
+  // 415 是我们自己发错了 Content-Type，重试没用，归入 rejected
+  if (status === 400 || status === 415 || status === 422) return "rejected";
   if (typeof status === "number" && status >= 500) return "network";
 
   const code = typeof e.code === "string" ? e.code.toUpperCase() : "";
