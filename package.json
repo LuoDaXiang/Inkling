@@ -5,5 +5,18 @@
   "description": "A shadowing practice app for English learners",
   "license": "GPL-3.0-or-later",
   "author": "LuoXiang <luoxiang.xt@gmail.com>",
-  "type": "module"
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:live": "vitest run --config vitest.live.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "vitest run --coverage.enabled --coverage.include='src/**' --coverage.exclude='src/**/types.ts' --coverage.reporter=text"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^2.1.9",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
 }

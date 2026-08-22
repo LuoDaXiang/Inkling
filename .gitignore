@@ -35,3 +35,7 @@ data/
 .idea/
 .DS_Store
 *.log
+
+# 本地 live 测试配置（含密钥，绝不入库）
+.env.local
+test.secrets.json
