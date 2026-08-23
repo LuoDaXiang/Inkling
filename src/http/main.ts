@@ -16,10 +16,22 @@ import { createApp } from "./server";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
-const KEY = process.env["AZURE_SPEECH_KEY"];
-const REGION = process.env["AZURE_SPEECH_REGION"];
-const VOICE = process.env["AZURE_TTS_VOICE"] ?? "en-US-AvaNeural";
-const PORT = Number(process.env["PORT"] ?? 5173);
+/**
+ * 空字符串等于没填。
+ *
+ * 这一行是踩出来的：`.env.local` 里写 `AZURE_TTS_VOICE=` 时，环境变量的值是 ""
+ * 而不是 undefined，所以 `?? 默认值` 不会兜底——空音色名一路送到 Azure，
+ * 换回一个 400。配置读取一律走这里，不要直接用 ?? 。
+ */
+function env(name: string): string | undefined {
+  const raw = process.env[name];
+  return raw && raw.trim() ? raw.trim() : undefined;
+}
+
+const KEY = env("AZURE_SPEECH_KEY");
+const REGION = env("AZURE_SPEECH_REGION");
+const VOICE = env("AZURE_TTS_VOICE") ?? "en-US-AvaNeural";
+const PORT = Number(env("PORT") ?? 5173);
 
 if (!KEY || !REGION) {
   console.error(
