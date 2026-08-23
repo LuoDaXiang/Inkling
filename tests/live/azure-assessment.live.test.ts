@@ -1,6 +1,8 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { AzureTtsProvider } from "@/providers/tts/azure";
 import { parseWav, buildWav } from "@/core/audio/wav";
+import { buildAssessmentHeader } from "@/providers/scoring/config";
+import { parseAssessment } from "@/providers/scoring/parse";
 
 /**
  * 发音评估的第一次真实调用。M02 的探针。
@@ -85,22 +87,37 @@ const ENDPOINT =
  * CancellationDetails 还要再翻译一层。我们已有一套认 HTTP 状态码的
  * 错误分类器，走 REST 能直接复用。同理见 docs/decisions.md 0010。
  */
+/**
+ * 请求头用**产品代码里的** buildAssessmentHeader 构造，不是在这里手搓。
+ *
+ * 这是判据四的落法（见 decisions 0026）：离线用例验证编码器产出的形状，
+ * 但形状对不对最终得由真服务说了算。两边用同一个函数，这条 live 用例
+ * 才真的在验证「我们发出去的东西 Azure 收得下」。
+ *
+ * 手搓一份配置放在测试里，测的就只是「我手搓的这份能用」——
+ * 产品代码哪天改坏了，这里照样绿。
+ */
 async function assess(audio: Uint8Array, reference: string, key = KEY as string) {
-  const config = {
-    ReferenceText: reference,
-    GradingSystem: "HundredMark",
-    Granularity: "Phoneme",
-    Dimension: "Comprehensive",
-    // 这一行就是 Enjoy 缺的那一行。
-    EnableProsodyAssessment: "True",
-  };
+  // 空参考文本是 prepareReference 明令拒绝的，但有一条用例就是要验证
+  // 「空参考会被服务端当成无参考评估」这个事实，所以那一条绕过构造器。
+  const header = reference.trim()
+    ? buildAssessmentHeader({ reference })
+    : Buffer.from(
+        JSON.stringify({
+          ReferenceText: reference,
+          GradingSystem: "HundredMark",
+          Granularity: "Phoneme",
+          Dimension: "Comprehensive",
+          EnableProsodyAssessment: "True",
+        }),
+      ).toString("base64");
 
   const response = await fetch(ENDPOINT, {
     method: "POST",
     headers: {
       "Ocp-Apim-Subscription-Key": key,
       "Content-Type": "audio/wav; codecs=audio/pcm; samplerate=16000",
-      "Pronunciation-Assessment": Buffer.from(JSON.stringify(config)).toString("base64"),
+      "Pronunciation-Assessment": header,
       Accept: "application/json",
     },
     body: Buffer.from(audio),
@@ -265,6 +282,23 @@ describeIf("Azure 发音评估 live", () => {
     );
     // SSML 那层要自己转义，评估这层不用——它收的是纯文本不是 XML。
     expect(escaped.PronScore).toBeGreaterThan(90);
+  });
+
+  test("产品代码的解析器能吃真实响应 —— 离线用例的骨架没编错", async () => {
+    // 判据四：scoring-parse.test.ts 的 REAL 常量是从一次真实响应剪下来的，
+    // 但剪的时候可能漏字段。这条用例让真响应直接过一遍产品解析器，
+    // 确认离线测试建立在现实之上，而不是建立在我对现实的记忆上。
+    const { body } = await assess(audio, SENTENCE);
+    const parsed = parseAssessment(body);
+
+    expect(parsed).not.toBeNull();
+    expect(parsed?.scores.accuracy).toBe(matched.AccuracyScore);
+    expect(parsed?.scores.prosody).toBe(matched.ProsodyScore);
+    expect(parsed?.words.length).toBe(matched.Words.length);
+    // 逐词的语调反馈必须解得出来——这是本项目相对 Enjoy 的差异化所在。
+    expect(parsed?.words.some((w) => typeof w.monotone === "number")).toBe(true);
+    expect(parsed?.words[0]?.phonemes.length).toBeGreaterThan(0);
+    expect(parsed?.snr).toBeGreaterThan(0);
   });
 
   test("Content-Type 里的采样率声明不影响结果 —— 服务端读 WAV 头", async () => {

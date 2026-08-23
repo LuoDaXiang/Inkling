@@ -42,6 +42,9 @@ export default defineConfig({
     include: ["tests/live/**/*.live.test.ts"],
     env: loadEnvLocal(),
     testTimeout: 120_000,
+    // 钩子不吃 testTimeout，默认仍是 10 秒。而 beforeAll 里要合成音频再评一次分，
+    // 慢的时候超过 10 秒。这个洞一直在，改动放大了它才露出来。
+    hookTimeout: 120_000,
     retry: 2,
     fileParallelism: false,
   },
