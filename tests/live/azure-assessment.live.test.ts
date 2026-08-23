@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { AzureTtsProvider } from "@/providers/tts/azure";
-import { parseWav } from "@/core/audio/wav";
+import { parseWav, buildWav } from "@/core/audio/wav";
 
 /**
  * 发音评估的第一次真实调用。M02 的探针。
@@ -209,6 +209,76 @@ describeIf("Azure 发音评估 live", () => {
   test("密钥错误返回 401，能对上已有的错误分类", async () => {
     const { status } = await assess(audio, SENTENCE, "0".repeat(32));
     expect(status).toBe(401);
+  });
+
+  // ---------------------------------------------------------------- 边缘行为
+  //
+  // 以下用例锁住的是「接口的脾气」，不是我们的代码——M04 建 ScoringProvider
+  // 时，这些就是它必须挡住的输入。全部实测过，见 docs/decisions.md 0020。
+
+  test("静音返回 200 但没有 NBest —— 光看状态码会当成成功", async () => {
+    const silence = buildWav({ sampleRate: 16000, samples: 16000 * 3 });
+    const { status, body } = await assess(silence, SENTENCE);
+    const parsed = JSON.parse(body) as AssessmentResponse;
+    // 这是最容易写错的一处：HTTP 成功不等于识别成功。
+    expect(status).toBe(200);
+    expect(parsed.RecognitionStatus).toBe("InitialSilenceTimeout");
+    expect(parsed.NBest?.[0]).toBeUndefined();
+  });
+
+  test("只有 WAV 头没有采样数据时，连 RecognitionStatus 都没有", async () => {
+    const empty = buildWav({ sampleRate: 16000, samples: 0 });
+    const { status, body } = await assess(empty, SENTENCE);
+    const parsed = JSON.parse(body) as AssessmentResponse;
+    expect(status).toBe(200);
+    // 所以判断顺序必须是「先看 NBest 在不在」，不能先看状态字段。
+    expect(parsed.NBest?.[0]).toBeUndefined();
+  });
+
+  test("空参考文本会被当成无参考评估，照样给高分", async () => {
+    // 最坏的一类失败：不崩、不报错、结果错。参考文本万一变成空字符串，
+    // 用户会拿到一个看起来完全正常的分数。所以送出之前必须自己拒绝。
+    const best = await scoresOf(audio, "");
+    expect(best.PronScore).toBeGreaterThan(80);
+  });
+
+  test("参考文本只有空格时五项全零", async () => {
+    const best = await scoresOf(audio, "   ");
+    expect(best.AccuracyScore).toBe(0);
+    expect(best.CompletenessScore).toBe(0);
+    // 语调在这种情况下直接缺席，取值必须当 number | undefined 处理。
+    expect(best.ProsodyScore).toBeUndefined();
+  });
+
+  test("参考文本比音频短时几乎不扣分 —— 多读不受惩罚", async () => {
+    const partial = await scoresOf(audio, "The quick brown fox");
+    // 完整度衡量的是「参考里的词你念了多少」，不是「你有没有念多余的」。
+    // 用户读错成另一句更长的话，仍然可能拿高分。
+    expect(partial.CompletenessScore).toBe(100);
+    expect(partial.PronScore).toBeGreaterThan(90);
+  });
+
+  test("参考文本含 XML 特殊字符不影响评分", async () => {
+    const escaped = await scoresOf(
+      audio,
+      'The <quick> & "brown" fox jumps over the lazy dog while the cat watches.',
+    );
+    // SSML 那层要自己转义，评估这层不用——它收的是纯文本不是 XML。
+    expect(escaped.PronScore).toBeGreaterThan(90);
+  });
+
+  test("Content-Type 里的采样率声明不影响结果 —— 服务端读 WAV 头", async () => {
+    // 这条推翻了一个曾经的判断：采样率声明不符并不会静默压低分数。
+    // 格式校验仍然要做，但理由是「提前拒绝更可预测」，不是「防止降分」。
+    const tts24 = new AzureTtsProvider({
+      key: KEY as string,
+      region: REGION as string,
+      outputFormat: "riff-24khz-16bit-mono-pcm",
+    });
+    const audio24 = (await tts24.synthesize({ text: SENTENCE, voice: "en-US-AvaNeural" })).audio;
+
+    const declared16 = JSON.parse((await assess(audio24, SENTENCE)).body) as AssessmentResponse;
+    expect(declared16.NBest?.[0]?.AccuracyScore).toBe(matched.AccuracyScore);
   });
 });
 
