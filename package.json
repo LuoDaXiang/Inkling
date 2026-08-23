@@ -7,6 +7,7 @@
   "author": "LuoXiang <luoxiang.xt@gmail.com>",
   "type": "module",
   "scripts": {
+    "dev": "node --env-file-if-exists=.env.local --import tsx src/http/main.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:live": "vitest run --config vitest.live.config.ts",
@@ -16,6 +17,7 @@
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@vitest/coverage-v8": "^2.1.9",
+    "tsx": "^4.23.12",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   }
