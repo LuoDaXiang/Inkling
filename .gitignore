@@ -21,6 +21,9 @@ playwright-report/
 
 # Local data (audio files, database, user settings)
 data/
+# 例外：效度测量结果是证据，要入库供复现与回溯（不含音频，只有分数）
+!data/validity/
+!data/validity/**
 *.sqlite
 *.sqlite-journal
 

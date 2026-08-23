@@ -1,0 +1,2754 @@
+{
+  "dataset": "mispeech/speechocean762",
+  "args": {
+    "n": 150,
+    "minAge": 16
+  },
+  "skipped": {
+    "tooYoung": 1280,
+    "notRecognized": 0,
+    "badAudio": 0
+  },
+  "scored": [
+    {
+      "text": "THAT WAS JUST HOW SHE WAS.",
+      "speaker": "9618",
+      "age": 24,
+      "seconds": 3.556,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 100,
+        "ProsodyScore": 75.3,
+        "CompletenessScore": 100,
+        "PronScore": 88.9
+      }
+    },
+    {
+      "text": "I DO NOT LOVE THIS WIND",
+      "speaker": "1109",
+      "age": 30,
+      "seconds": 4.07,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 96,
+        "FluencyScore": 99,
+        "ProsodyScore": 75.4,
+        "CompletenessScore": 100,
+        "PronScore": 89.2
+      }
+    },
+    {
+      "text": "IT WAS SIMPLE ENOUGH IF THEY HAD ONLY THOUGHT.",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 7.387,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 5,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 62,
+        "FluencyScore": 32,
+        "ProsodyScore": 27.1,
+        "CompletenessScore": 56,
+        "PronScore": 40.8
+      }
+    },
+    {
+      "text": "WAKE UP WITH A MISSION",
+      "speaker": "1186",
+      "age": 23,
+      "seconds": 3.39,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 90,
+        "ProsodyScore": 81.7,
+        "CompletenessScore": 100,
+        "PronScore": 90.3
+      }
+    },
+    {
+      "text": "YOU HAVE TO CHANGE WITH THEM OR BE LEFT BEHIND.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 7.641,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 65,
+        "FluencyScore": 63,
+        "ProsodyScore": 48.5,
+        "CompletenessScore": 60,
+        "PronScore": 57
+      }
+    },
+    {
+      "text": "GETTING READY TO GO BOXING",
+      "speaker": "0306",
+      "age": 21,
+      "seconds": 3.5,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 92,
+        "FluencyScore": 100,
+        "ProsodyScore": 73.3,
+        "CompletenessScore": 100,
+        "PronScore": 87.7
+      }
+    },
+    {
+      "text": "I AM GLAD YOU ARE BACK",
+      "speaker": "2937",
+      "age": 19,
+      "seconds": 2.48,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 96,
+        "FluencyScore": 100,
+        "ProsodyScore": 79.6,
+        "CompletenessScore": 100,
+        "PronScore": 91
+      }
+    },
+    {
+      "text": "WE HAD TO MAKE IT.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 5.476,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 4,
+        "prosodic": 3,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 52,
+        "FluencyScore": 65,
+        "ProsodyScore": 34.2,
+        "CompletenessScore": 40,
+        "PronScore": 45.1
+      }
+    },
+    {
+      "text": "SHE CLOSED HER EYES AND THOUGHT BACK.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 5.49,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 46,
+        "FluencyScore": 73,
+        "ProsodyScore": 42.7,
+        "CompletenessScore": 14,
+        "PronScore": 37.9
+      }
+    },
+    {
+      "text": "I NOW KNOW THE ANSWERS TO THOSE QUESTIONS",
+      "speaker": "1037",
+      "age": 35,
+      "seconds": 3.381,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.7,
+        "CompletenessScore": 100,
+        "PronScore": 96.3
+      }
+    },
+    {
+      "text": "THERE IS STAT TIME FOR YOU TO JOIN US TOO",
+      "speaker": "1181",
+      "age": 23,
+      "seconds": 3.55,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 8,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 84,
+        "FluencyScore": 89,
+        "ProsodyScore": 67,
+        "CompletenessScore": 80,
+        "PronScore": 77.4
+      }
+    },
+    {
+      "text": "DOING BETTER THAN MOST OF US",
+      "speaker": "2031",
+      "age": 21,
+      "seconds": 2.76,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 91,
+        "ProsodyScore": 86.6,
+        "CompletenessScore": 100,
+        "PronScore": 91.8
+      }
+    },
+    {
+      "text": "WAITING FOR WHAT? SHE THOUGHT.",
+      "speaker": "9640",
+      "age": 29,
+      "seconds": 3.839,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 85,
+        "FluencyScore": 99,
+        "ProsodyScore": 61,
+        "CompletenessScore": 80,
+        "PronScore": 77.2
+      }
+    },
+    {
+      "text": "THERE IS NO RIGHT OR WRONG WAY TO MAKE ART",
+      "speaker": "0457",
+      "age": 21,
+      "seconds": 4.43,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 88,
+        "FluencyScore": 98,
+        "ProsodyScore": 60.5,
+        "CompletenessScore": 90,
+        "PronScore": 79.4
+      }
+    },
+    {
+      "text": "YOU HAVE TO WORK FOR THEM",
+      "speaker": "1186",
+      "age": 23,
+      "seconds": 3.227,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 81,
+        "CompletenessScore": 100,
+        "PronScore": 92.4
+      }
+    },
+    {
+      "text": "SOMEWHERE THERE HAD TO BE A PLACE BETTER THAN THIS.",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 9.21,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 81,
+        "FluencyScore": 56,
+        "ProsodyScore": 53.3,
+        "CompletenessScore": 80,
+        "PronScore": 64.7
+      }
+    },
+    {
+      "text": "CAN WE TALK ABOUT HAIR",
+      "speaker": "2740",
+      "age": 20,
+      "seconds": 2.574,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 87.1,
+        "CompletenessScore": 100,
+        "PronScore": 94.2
+      }
+    },
+    {
+      "text": "THERE WAS NO NEED FOR HIM TOO.",
+      "speaker": "9623",
+      "age": 21,
+      "seconds": 6.127,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 5,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 78,
+        "FluencyScore": 91,
+        "ProsodyScore": 34.6,
+        "CompletenessScore": 86,
+        "PronScore": 64.8
+      }
+    },
+    {
+      "text": "MAKES ME FEEL BETTER ABOUT LIFE",
+      "speaker": "0457",
+      "age": 21,
+      "seconds": 3.001,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 90,
+        "FluencyScore": 100,
+        "ProsodyScore": 71.9,
+        "CompletenessScore": 83,
+        "PronScore": 83.4
+      }
+    },
+    {
+      "text": "I PUT MY HAND ON IT.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 6.323,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 54,
+        "FluencyScore": 47,
+        "ProsodyScore": 25.8,
+        "CompletenessScore": 33,
+        "PronScore": 37.1
+      }
+    },
+    {
+      "text": "DO YOU WANT TO DO AND BRING DOWN THE HOUSE",
+      "speaker": "1420",
+      "age": 25,
+      "seconds": 3.07,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 10
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.6,
+        "CompletenessScore": 100,
+        "PronScore": 95.6
+      }
+    },
+    {
+      "text": "I NEED TO TAKE A VACATION",
+      "speaker": "0157",
+      "age": 21,
+      "seconds": 2.87,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 91.1,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "NATIONALLY THOUGH THE TREND IS BEGINNING TO TURN UPWARD AGAIN",
+      "speaker": "0461",
+      "age": 23,
+      "seconds": 8.26,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 93,
+        "FluencyScore": 75,
+        "ProsodyScore": 58.7,
+        "CompletenessScore": 100,
+        "PronScore": 77.1
+      }
+    },
+    {
+      "text": "HOPE YOU ALL HAD A GOOD WEEKEND",
+      "speaker": "2538",
+      "age": 21,
+      "seconds": 3.406,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 100,
+        "ProsodyScore": 85.3,
+        "CompletenessScore": 100,
+        "PronScore": 93.1
+      }
+    },
+    {
+      "text": "THERE WAS NO ONE ELSE SHE WANTED BY HER SIDE.",
+      "speaker": "9622",
+      "age": 20,
+      "seconds": 9.797,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 56,
+        "FluencyScore": 58,
+        "ProsodyScore": 23.2,
+        "CompletenessScore": 50,
+        "PronScore": 42.1
+      }
+    },
+    {
+      "text": "BUT NOW I SEE WHO YOU REALLY ARE!",
+      "speaker": "9635",
+      "age": 24,
+      "seconds": 5.909,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 68,
+        "FluencyScore": 88,
+        "ProsodyScore": 39.7,
+        "CompletenessScore": 62,
+        "PronScore": 59.5
+      }
+    },
+    {
+      "text": "I CAN HARDLY WAIT TO SEE THIS",
+      "speaker": "2892",
+      "age": 24,
+      "seconds": 2.98,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 87.3,
+        "CompletenessScore": 100,
+        "PronScore": 94.7
+      }
+    },
+    {
+      "text": "GET READY TO MAKE FUN OF THEM",
+      "speaker": "1135",
+      "age": 25,
+      "seconds": 3.67,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 71,
+        "FluencyScore": 99,
+        "ProsodyScore": 67.9,
+        "CompletenessScore": 71,
+        "PronScore": 75.4
+      }
+    },
+    {
+      "text": "WELCOME TO THE NEW WORLD",
+      "speaker": "2897",
+      "age": 20,
+      "seconds": 2.455,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 10
+      },
+      "azure": {
+        "AccuracyScore": 93,
+        "FluencyScore": 100,
+        "ProsodyScore": 90,
+        "CompletenessScore": 100,
+        "PronScore": 94.6
+      }
+    },
+    {
+      "text": "NO ONE SEEMS QUITE SURE IS THE PLAN WILL WORK",
+      "speaker": "2441",
+      "age": 19,
+      "seconds": 4.242,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 82.2,
+        "CompletenessScore": 100,
+        "PronScore": 92.5
+      }
+    },
+    {
+      "text": "WHAT IS THE WORST ONE",
+      "speaker": "2252",
+      "age": 20,
+      "seconds": 2.43,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 83.5,
+        "CompletenessScore": 100,
+        "PronScore": 93
+      }
+    },
+    {
+      "text": "WHAT IS THE BEST MONTH OF THE YEAR",
+      "speaker": "0457",
+      "age": 21,
+      "seconds": 3.45,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 91,
+        "FluencyScore": 98,
+        "ProsodyScore": 66.8,
+        "CompletenessScore": 100,
+        "PronScore": 84.5
+      }
+    },
+    {
+      "text": "THIS WAS THE WAY IT SHOULD ALWAYS BE.",
+      "speaker": "9629",
+      "age": 25,
+      "seconds": 6.623,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 80,
+        "FluencyScore": 77,
+        "ProsodyScore": 49.3,
+        "CompletenessScore": 75,
+        "PronScore": 66.1
+      }
+    },
+    {
+      "text": "SHE HAD NOTHING BETTER TO DO THAT NIGHT.",
+      "speaker": "9612",
+      "age": 20,
+      "seconds": 4.777,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 8,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 96,
+        "FluencyScore": 94,
+        "ProsodyScore": 70.2,
+        "CompletenessScore": 100,
+        "PronScore": 86.1
+      }
+    },
+    {
+      "text": "THAT YOU LOVE ME AS MUCH AS I LOVE YOU.",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 4.31,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 93,
+        "FluencyScore": 99,
+        "ProsodyScore": 50.3,
+        "CompletenessScore": 100,
+        "PronScore": 78.5
+      }
+    },
+    {
+      "text": "I AM SURE YOU CAN DO IT.",
+      "speaker": "9635",
+      "age": 24,
+      "seconds": 5.668,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 80,
+        "FluencyScore": 93,
+        "ProsodyScore": 55.5,
+        "CompletenessScore": 86,
+        "PronScore": 74
+      }
+    },
+    {
+      "text": "LET ME KNOW IF YOU HAVE ANYTHING HE CAN ATTEND",
+      "speaker": "1181",
+      "age": 23,
+      "seconds": 4.46,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 98,
+        "ProsodyScore": 46.7,
+        "CompletenessScore": 100,
+        "PronScore": 77.1
+      }
+    },
+    {
+      "text": "AND KEEP IN TOUCH WITH HER",
+      "speaker": "1030",
+      "age": 27,
+      "seconds": 2.83,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 86.9,
+        "CompletenessScore": 100,
+        "PronScore": 94.8
+      }
+    },
+    {
+      "text": "JUST CAUGHT A GLIMPSE OF MYSELF IN THE MIRROR",
+      "speaker": "2451",
+      "age": 23,
+      "seconds": 5.588,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 96,
+        "ProsodyScore": 84.3,
+        "CompletenessScore": 100,
+        "PronScore": 92.5
+      }
+    },
+    {
+      "text": "I WANTED TO FIND MORE OUT ABOUT YOU.",
+      "speaker": "9618",
+      "age": 24,
+      "seconds": 5.437,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 88,
+        "FluencyScore": 82,
+        "ProsodyScore": 63.5,
+        "CompletenessScore": 100,
+        "PronScore": 79.4
+      }
+    },
+    {
+      "text": "THE BALL IS IN THEIR COURT NOW",
+      "speaker": "0306",
+      "age": 21,
+      "seconds": 3.7,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 58,
+        "FluencyScore": 71,
+        "ProsodyScore": 65.9,
+        "CompletenessScore": 43,
+        "PronScore": 56.2
+      }
+    },
+    {
+      "text": "BOTH GIRLS CALLED OUT AS THEY WATCHED HER LEAVE.",
+      "speaker": "9647",
+      "age": 20,
+      "seconds": 6.395,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 81,
+        "FluencyScore": 67,
+        "ProsodyScore": 43.3,
+        "CompletenessScore": 78,
+        "PronScore": 62.5
+      }
+    },
+    {
+      "text": "HE WAS ALWAYS UP TO NO GOOD.",
+      "speaker": "9633",
+      "age": 21,
+      "seconds": 6.058,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 80,
+        "FluencyScore": 74,
+        "ProsodyScore": 47.4,
+        "CompletenessScore": 86,
+        "PronScore": 67
+      }
+    },
+    {
+      "text": "FIRST PLACE IN THE DIVISION",
+      "speaker": "0461",
+      "age": 23,
+      "seconds": 2.993,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 93,
+        "FluencyScore": 100,
+        "ProsodyScore": 66.9,
+        "CompletenessScore": 100,
+        "PronScore": 85.4
+      }
+    },
+    {
+      "text": "YOU HAVE TO BE VERY LOOSE",
+      "speaker": "0157",
+      "age": 21,
+      "seconds": 2.752,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.9,
+        "CompletenessScore": 100,
+        "PronScore": 96
+      }
+    },
+    {
+      "text": "I JUST WANT HER BACK.",
+      "speaker": "9633",
+      "age": 21,
+      "seconds": 4.648,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 91,
+        "FluencyScore": 70,
+        "ProsodyScore": 64.6,
+        "CompletenessScore": 100,
+        "PronScore": 78
+      }
+    },
+    {
+      "text": "IT IS NOT THE FACE HE KNOWS THOUGH.",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 6.224,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 69,
+        "FluencyScore": 42,
+        "ProsodyScore": 55.8,
+        "CompletenessScore": 62,
+        "PronScore": 54.2
+      }
+    },
+    {
+      "text": "I THINK IT'S STILL A MATTER OF TASTE THROUGH",
+      "speaker": "0306",
+      "age": 21,
+      "seconds": 4.69,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 92,
+        "FluencyScore": 97,
+        "ProsodyScore": 62.8,
+        "CompletenessScore": 100,
+        "PronScore": 82.9
+      }
+    },
+    {
+      "text": "I SEE THAT NOW IT IS TOO NIGHT",
+      "speaker": "0765",
+      "age": 20,
+      "seconds": 3.487,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 99,
+        "ProsodyScore": 78.9,
+        "CompletenessScore": 100,
+        "PronScore": 91
+      }
+    },
+    {
+      "text": "AND STATES HAVE NOT HAD MUCH TIME",
+      "speaker": "0811",
+      "age": 20,
+      "seconds": 3.609,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.9,
+        "CompletenessScore": 100,
+        "PronScore": 95.2
+      }
+    },
+    {
+      "text": "IT WAS TOO DARK TO SEE WHO IT WAS.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 8.661,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 58,
+        "FluencyScore": 55,
+        "ProsodyScore": 24.7,
+        "CompletenessScore": 56,
+        "PronScore": 43.7
+      }
+    },
+    {
+      "text": "YOU CAN JUMP WITHOUT ME.",
+      "speaker": "9647",
+      "age": 20,
+      "seconds": 3.973,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 90,
+        "FluencyScore": 85,
+        "ProsodyScore": 63.1,
+        "CompletenessScore": 80,
+        "PronScore": 76.2
+      }
+    },
+    {
+      "text": "AND THERE WAS AN END OF IT.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 7.098,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 3,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 54,
+        "FluencyScore": 41,
+        "ProsodyScore": 20.4,
+        "CompletenessScore": 57,
+        "PronScore": 38.6
+      }
+    },
+    {
+      "text": "SHOW THE PAY RICE VIDEO",
+      "speaker": "2538",
+      "age": 21,
+      "seconds": 2.772,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.8,
+        "CompletenessScore": 100,
+        "PronScore": 94.5
+      }
+    },
+    {
+      "text": "I WOULD NEVER HAVE LEFT.",
+      "speaker": "9633",
+      "age": 21,
+      "seconds": 5.36,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 83,
+        "FluencyScore": 82,
+        "ProsodyScore": 65.6,
+        "CompletenessScore": 100,
+        "PronScore": 79.2
+      }
+    },
+    {
+      "text": "THIS IS GOOD FOR US",
+      "speaker": "2252",
+      "age": 20,
+      "seconds": 2.486,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 86.2,
+        "CompletenessScore": 100,
+        "PronScore": 94.1
+      }
+    },
+    {
+      "text": "YOU FEEL LIKE A LITTLE BROTHER TO ME!",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 6.216,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 81,
+        "FluencyScore": 54,
+        "ProsodyScore": 49.8,
+        "CompletenessScore": 88,
+        "PronScore": 64.5
+      }
+    },
+    {
+      "text": "IT'S A HUMAN BEING THING",
+      "speaker": "0457",
+      "age": 21,
+      "seconds": 2.7,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 69,
+        "ProsodyScore": 71.9,
+        "CompletenessScore": 100,
+        "PronScore": 81
+      }
+    },
+    {
+      "text": "BUT STILL I WOULD DO MY BEST.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 4.43,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 80,
+        "FluencyScore": 89,
+        "ProsodyScore": 59.4,
+        "CompletenessScore": 86,
+        "PronScore": 74.8
+      }
+    },
+    {
+      "text": "SO WE PUT HIM IN THE AD",
+      "speaker": "0563",
+      "age": 22,
+      "seconds": 3.43,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 85,
+        "FluencyScore": 99,
+        "ProsodyScore": 68.8,
+        "CompletenessScore": 86,
+        "PronScore": 81.5
+      }
+    },
+    {
+      "text": "NO ONE WAS HURT IN THE EXPLOSION",
+      "speaker": "1293",
+      "age": 32,
+      "seconds": 3.07,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.4,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "I AM GOING TO LEARN",
+      "speaker": "2897",
+      "age": 20,
+      "seconds": 2.058,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 84,
+        "FluencyScore": 100,
+        "ProsodyScore": 82.2,
+        "CompletenessScore": 80,
+        "PronScore": 85.2
+      }
+    },
+    {
+      "text": "I THINK IT WILL DO US ALL SOME GOOD.",
+      "speaker": "9631",
+      "age": 26,
+      "seconds": 5.501,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 84,
+        "FluencyScore": 90,
+        "ProsodyScore": 65.6,
+        "CompletenessScore": 89,
+        "PronScore": 78.8
+      }
+    },
+    {
+      "text": "I WAS LOOKING FOR HIM",
+      "speaker": "0120",
+      "age": 19,
+      "seconds": 2.746,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 87.3,
+        "CompletenessScore": 100,
+        "PronScore": 94.7
+      }
+    },
+    {
+      "text": "WHAT ABOUT THE SHAPE OF THE UNIVERSE",
+      "speaker": "2448",
+      "age": 19,
+      "seconds": 3.322,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.7,
+        "CompletenessScore": 100,
+        "PronScore": 95.5
+      }
+    },
+    {
+      "text": "I STILL HAD NO IDEA WHO HE WAS.",
+      "speaker": "9623",
+      "age": 21,
+      "seconds": 8.857,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 80,
+        "FluencyScore": 74,
+        "ProsodyScore": 38.4,
+        "CompletenessScore": 88,
+        "PronScore": 63.8
+      }
+    },
+    {
+      "text": "SHE SMILED FOR THE FIRST TIME THAT DAY.",
+      "speaker": "9631",
+      "age": 26,
+      "seconds": 5.064,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 75,
+        "FluencyScore": 63,
+        "ProsodyScore": 59.4,
+        "CompletenessScore": 75,
+        "PronScore": 66.4
+      }
+    },
+    {
+      "text": "MY THOUGHTS AND PRAYERS ARE WITH FRIENDS TODAY",
+      "speaker": "2937",
+      "age": 19,
+      "seconds": 3.478,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 96,
+        "FluencyScore": 100,
+        "ProsodyScore": 84,
+        "CompletenessScore": 100,
+        "PronScore": 92.8
+      }
+    },
+    {
+      "text": "I WILL KNOW WHAT TO DO",
+      "speaker": "0567",
+      "age": 21,
+      "seconds": 2.741,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 8,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 96,
+        "FluencyScore": 100,
+        "ProsodyScore": 72.9,
+        "CompletenessScore": 100,
+        "PronScore": 88.4
+      }
+    },
+    {
+      "text": "I SEEMED TO BE THE FIRST ONE DOWN.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 7.153,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 87,
+        "FluencyScore": 69,
+        "ProsodyScore": 49.5,
+        "CompletenessScore": 88,
+        "PronScore": 68.6
+      }
+    },
+    {
+      "text": "THE ONLY ONE WHO KNOWS WHY IS HIM",
+      "speaker": "1420",
+      "age": 25,
+      "seconds": 3.11,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 79.8,
+        "CompletenessScore": 100,
+        "PronScore": 91.5
+      }
+    },
+    {
+      "text": "I THOUGHT FOR SURE SHE WOULD SAY SOMETHING.",
+      "speaker": "9629",
+      "age": 25,
+      "seconds": 8.611,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 79,
+        "FluencyScore": 65,
+        "ProsodyScore": 54.9,
+        "CompletenessScore": 88,
+        "PronScore": 68.4
+      }
+    },
+    {
+      "text": "THERE WAS NO WAY WE COULD GET OUT.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 6.618,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 61,
+        "FluencyScore": 51,
+        "ProsodyScore": 47.8,
+        "CompletenessScore": 50,
+        "PronScore": 51.5
+      }
+    },
+    {
+      "text": "YOU ARE A FOOL FOR THAT",
+      "speaker": "1186",
+      "age": 23,
+      "seconds": 3.265,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 8,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 98,
+        "ProsodyScore": 78.4,
+        "CompletenessScore": 100,
+        "PronScore": 90.6
+      }
+    },
+    {
+      "text": "HE WAS THOUGHT OF THAT HIGHLY",
+      "speaker": "0563",
+      "age": 22,
+      "seconds": 3.765,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 86,
+        "FluencyScore": 99,
+        "ProsodyScore": 70.5,
+        "CompletenessScore": 100,
+        "PronScore": 85.2
+      }
+    },
+    {
+      "text": "THE OTHER WAS A GIRL AS WELL.",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 6.082,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 86,
+        "FluencyScore": 69,
+        "ProsodyScore": 56.1,
+        "CompletenessScore": 86,
+        "PronScore": 70.6
+      }
+    },
+    {
+      "text": "LOVING LIFE AND ALL THE PEOPLE IN MINE",
+      "speaker": "0461",
+      "age": 23,
+      "seconds": 4.872,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 85,
+        "ProsodyScore": 67.4,
+        "CompletenessScore": 100,
+        "PronScore": 83
+      }
+    },
+    {
+      "text": "IT WAS SOMETHING MORE THAN THAT.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 5.08,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 74,
+        "FluencyScore": 66,
+        "ProsodyScore": 34.1,
+        "CompletenessScore": 67,
+        "PronScore": 55
+      }
+    },
+    {
+      "text": "REALITY IS NOT AS DRAMATIC",
+      "speaker": "1228",
+      "age": 26,
+      "seconds": 3.45,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 79,
+        "FluencyScore": 100,
+        "ProsodyScore": 64.4,
+        "CompletenessScore": 80,
+        "PronScore": 77.6
+      }
+    },
+    {
+      "text": "JUST KEEP YOUR HEAD UP BROTHER",
+      "speaker": "1030",
+      "age": 27,
+      "seconds": 3.2,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 9,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 83.2,
+        "CompletenessScore": 100,
+        "PronScore": 93.1
+      }
+    },
+    {
+      "text": "CHECK IT OUT YOU WILL NOT TO AN DISAPPOINTED",
+      "speaker": "0736",
+      "age": 21,
+      "seconds": 6.01,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 81,
+        "FluencyScore": 94,
+        "ProsodyScore": 57.4,
+        "CompletenessScore": 78,
+        "PronScore": 73.6
+      }
+    },
+    {
+      "text": "HE WAS STILL AT HOME.",
+      "speaker": "9612",
+      "age": 20,
+      "seconds": 2.962,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 96,
+        "FluencyScore": 97,
+        "ProsodyScore": 76.9,
+        "CompletenessScore": 100,
+        "PronScore": 89.4
+      }
+    },
+    {
+      "text": "THOSE ARE NOT PART OF THE RULES",
+      "speaker": "0736",
+      "age": 21,
+      "seconds": 4,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 76,
+        "FluencyScore": 75,
+        "ProsodyScore": 59,
+        "CompletenessScore": 71,
+        "PronScore": 68
+      }
+    },
+    {
+      "text": "SO IT'S GOOD THING FOR HIM",
+      "speaker": "0567",
+      "age": 21,
+      "seconds": 3.187,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 100,
+        "ProsodyScore": 78.3,
+        "CompletenessScore": 100,
+        "PronScore": 90.1
+      }
+    },
+    {
+      "text": "SHE WISHED THAT SHE HAD NEVER COME HERE.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 6.387,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 5,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 50,
+        "FluencyScore": 71,
+        "ProsodyScore": 43.1,
+        "CompletenessScore": 38,
+        "PronScore": 48
+      }
+    },
+    {
+      "text": "WHO ELSE WOULD YOU WANT OUT THERE",
+      "speaker": "2252",
+      "age": 20,
+      "seconds": 3.058,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 99,
+        "ProsodyScore": 77.7,
+        "CompletenessScore": 100,
+        "PronScore": 90.3
+      }
+    },
+    {
+      "text": "SHE WALKED OUT OF THE ROOM AGAIN.",
+      "speaker": "9617",
+      "age": 35,
+      "seconds": 4.84,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 71,
+        "FluencyScore": 67,
+        "ProsodyScore": 51.3,
+        "CompletenessScore": 71,
+        "PronScore": 62.3
+      }
+    },
+    {
+      "text": "I EXPECT THIS TO BE AS NICE",
+      "speaker": "1420",
+      "age": 25,
+      "seconds": 2.96,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 10
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.1,
+        "CompletenessScore": 100,
+        "PronScore": 95
+      }
+    },
+    {
+      "text": "I CAN UNDERSTAND HIS DESIRE TO GET ANOTHER OPINION",
+      "speaker": "0765",
+      "age": 20,
+      "seconds": 6.311,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 86,
+        "FluencyScore": 93,
+        "ProsodyScore": 70.8,
+        "CompletenessScore": 89,
+        "PronScore": 81.9
+      }
+    },
+    {
+      "text": "I SUPPOSE IT IS BETTER THAT YOU SHOULD TELL ME.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 6.066,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 3,
+        "prosodic": 3,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 63,
+        "FluencyScore": 58,
+        "ProsodyScore": 12.8,
+        "CompletenessScore": 60,
+        "PronScore": 41.3
+      }
+    },
+    {
+      "text": "THIS LOOKS AS IF IT'S GOING TO WORK",
+      "speaker": "1156",
+      "age": 33,
+      "seconds": 4.058,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 88,
+        "ProsodyScore": 88.6,
+        "CompletenessScore": 100,
+        "PronScore": 92.5
+      }
+    },
+    {
+      "text": "HELPS ME TO HAVE A GO AT MYSELF",
+      "speaker": "1334",
+      "age": 29,
+      "seconds": 3.29,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 81.3,
+        "CompletenessScore": 100,
+        "PronScore": 92.1
+      }
+    },
+    {
+      "text": "HE THEN WALKED FROM THERE, OUT OF THAT ROOM.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 10.443,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 3,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 61,
+        "FluencyScore": 61,
+        "ProsodyScore": 22.7,
+        "CompletenessScore": 56,
+        "PronScore": 44.7
+      }
+    },
+    {
+      "text": "I HAVE BETTER GET OUT OF HERE.",
+      "speaker": "9631",
+      "age": 26,
+      "seconds": 3.661,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 98,
+        "ProsodyScore": 76.3,
+        "CompletenessScore": 100,
+        "PronScore": 88.9
+      }
+    },
+    {
+      "text": "HE COULD NEVER SEE HER BEFORE.",
+      "speaker": "9618",
+      "age": 24,
+      "seconds": 5.858,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 5,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 88,
+        "FluencyScore": 71,
+        "ProsodyScore": 66.7,
+        "CompletenessScore": 100,
+        "PronScore": 78.5
+      }
+    },
+    {
+      "text": "IT WILL HAVE A BODY AGAIN",
+      "speaker": "0457",
+      "age": 21,
+      "seconds": 3.12,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 99,
+        "ProsodyScore": 82.1,
+        "CompletenessScore": 100,
+        "PronScore": 92.2
+      }
+    },
+    {
+      "text": "YOU MUST NOT THINK OF THE PAST NOW.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 7.208,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 57,
+        "FluencyScore": 58,
+        "ProsodyScore": 37.3,
+        "CompletenessScore": 50,
+        "PronScore": 47.9
+      }
+    },
+    {
+      "text": "TALKING IS NOT THE PROBLEM",
+      "speaker": "1420",
+      "age": 25,
+      "seconds": 2.43,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 86.9,
+        "CompletenessScore": 100,
+        "PronScore": 94.4
+      }
+    },
+    {
+      "text": "END OF THE ROAD FOR SOME PLAYERS",
+      "speaker": "0306",
+      "age": 21,
+      "seconds": 3.79,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 84,
+        "FluencyScore": 87,
+        "ProsodyScore": 69.8,
+        "CompletenessScore": 86,
+        "PronScore": 79.3
+      }
+    },
+    {
+      "text": "YOU DO HAVE A SOUL",
+      "speaker": "0157",
+      "age": 21,
+      "seconds": 2.72,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.6,
+        "CompletenessScore": 100,
+        "PronScore": 94.4
+      }
+    },
+    {
+      "text": "WE MUST THINK OF THE GOOD, AND NOT THE EVIL.",
+      "speaker": "9623",
+      "age": 21,
+      "seconds": 10.57,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 90,
+        "FluencyScore": 82,
+        "ProsodyScore": 34.8,
+        "CompletenessScore": 100,
+        "PronScore": 68.3
+      }
+    },
+    {
+      "text": "UNLUCKY LOOKS LIKE WE WERE THE BETTER TEAM",
+      "speaker": "0567",
+      "age": 21,
+      "seconds": 4.92,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 64,
+        "FluencyScore": 100,
+        "ProsodyScore": 72.9,
+        "CompletenessScore": 50,
+        "PronScore": 67.4
+      }
+    },
+    {
+      "text": "BUT I SEE NO CAUSE FOR CONCERN OR ALARM",
+      "speaker": "1135",
+      "age": 25,
+      "seconds": 4.53,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 8,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 93,
+        "FluencyScore": 99,
+        "ProsodyScore": 72.4,
+        "CompletenessScore": 100,
+        "PronScore": 87.4
+      }
+    },
+    {
+      "text": "THE FIRST MAY BE THUS EXPLAINED.",
+      "speaker": "9647",
+      "age": 20,
+      "seconds": 3.95,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 62,
+        "FluencyScore": 84,
+        "ProsodyScore": 26.7,
+        "CompletenessScore": 67,
+        "PronScore": 53.3
+      }
+    },
+    {
+      "text": "FEELS GOOD TO GET THAT OUT OF THE WAY",
+      "speaker": "1334",
+      "age": 29,
+      "seconds": 3.06,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 8,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 99,
+        "ProsodyScore": 83.5,
+        "CompletenessScore": 100,
+        "PronScore": 93
+      }
+    },
+    {
+      "text": "THREW A PARTY OF COURSE",
+      "speaker": "2112",
+      "age": 20,
+      "seconds": 3.32,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 99,
+        "ProsodyScore": 87.4,
+        "CompletenessScore": 100,
+        "PronScore": 94.4
+      }
+    },
+    {
+      "text": "PLEASE FORGIVE ME, MY FRIEND?",
+      "speaker": "9640",
+      "age": 29,
+      "seconds": 3.911,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 83,
+        "FluencyScore": 83,
+        "ProsodyScore": 73.9,
+        "CompletenessScore": 80,
+        "PronScore": 78.8
+      }
+    },
+    {
+      "text": "WHEN NO ONE KNOWS MUCH ABOUT YOU YOU HAVE PEACE",
+      "speaker": "0457",
+      "age": 21,
+      "seconds": 5.13,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 87,
+        "ProsodyScore": 69.8,
+        "CompletenessScore": 100,
+        "PronScore": 84.7
+      }
+    },
+    {
+      "text": "NO, IT WAS THE EYES.",
+      "speaker": "9623",
+      "age": 21,
+      "seconds": 3.88,
+      "expert": {
+        "accuracy": 6,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 86,
+        "FluencyScore": 90,
+        "ProsodyScore": 26.7,
+        "CompletenessScore": 100,
+        "PronScore": 65.9
+      }
+    },
+    {
+      "text": "NO ANGEL WOULD DO SUCH A THING",
+      "speaker": "2451",
+      "age": 23,
+      "seconds": 4.607,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 95,
+        "FluencyScore": 100,
+        "ProsodyScore": 83.4,
+        "CompletenessScore": 100,
+        "PronScore": 92.4
+      }
+    },
+    {
+      "text": "I GUESS YOU COULD SAY THIS IS IT",
+      "speaker": "2937",
+      "age": 19,
+      "seconds": 3.645,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 99,
+        "ProsodyScore": 81.2,
+        "CompletenessScore": 100,
+        "PronScore": 91.7
+      }
+    },
+    {
+      "text": "SUCCESSFUL FIRST DAY FOR COLLEGE",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.266,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 99,
+        "ProsodyScore": 90.4,
+        "CompletenessScore": 100,
+        "PronScore": 95.4
+      }
+    },
+    {
+      "text": "TAKE A BREAK TO GET A GLASS OF WATER LATELY",
+      "speaker": "1135",
+      "age": 25,
+      "seconds": 4.87,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 100,
+        "ProsodyScore": 68.8,
+        "CompletenessScore": 100,
+        "PronScore": 86.3
+      }
+    },
+    {
+      "text": "HOWEVER HE IS NOT LEGALLY RESPONSIBLE",
+      "speaker": "0563",
+      "age": 22,
+      "seconds": 4.43,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 90,
+        "FluencyScore": 100,
+        "ProsodyScore": 80.3,
+        "CompletenessScore": 100,
+        "PronScore": 90.1
+      }
+    },
+    {
+      "text": "SATURDAY IS GOING TO BE A LOT OF FUN",
+      "speaker": "0120",
+      "age": 19,
+      "seconds": 3.72,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.1,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "NOTHING BUT AN IMMENSE SEA.",
+      "speaker": "9647",
+      "age": 20,
+      "seconds": 5.166,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 68,
+        "FluencyScore": 45,
+        "ProsodyScore": 56.4,
+        "CompletenessScore": 60,
+        "PronScore": 54.9
+      }
+    },
+    {
+      "text": "WE TALKED ALL NIGHT, AGAIN, ABOUT THIS AND THAT.",
+      "speaker": "9608",
+      "age": 30,
+      "seconds": 6.171,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 54,
+        "FluencyScore": 72,
+        "ProsodyScore": 41.8,
+        "CompletenessScore": 56,
+        "PronScore": 53.1
+      }
+    },
+    {
+      "text": "LOVE IS A STRONG MAN IN THE MIDDLE",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.79,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 10
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.5,
+        "CompletenessScore": 100,
+        "PronScore": 95.4
+      }
+    },
+    {
+      "text": "THEY ALL SMILED AT THE WORLD AROUND THEM.",
+      "speaker": "9626",
+      "age": 37,
+      "seconds": 7.939,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 55,
+        "FluencyScore": 61,
+        "ProsodyScore": 32.9,
+        "CompletenessScore": 50,
+        "PronScore": 46.4
+      }
+    },
+    {
+      "text": "I WANT TO BE A PART OF THIS THREAD",
+      "speaker": "2917",
+      "age": 19,
+      "seconds": 3.397,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.9,
+        "CompletenessScore": 100,
+        "PronScore": 95.4
+      }
+    },
+    {
+      "text": "DO YOU EVER THINK ABOUT THE THINGS YOU SAY",
+      "speaker": "2488",
+      "age": 21,
+      "seconds": 3.39,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 93,
+        "FluencyScore": 100,
+        "ProsodyScore": 87.2,
+        "CompletenessScore": 100,
+        "PronScore": 93.5
+      }
+    },
+    {
+      "text": "CHEERS TO A GREAT GROUP",
+      "speaker": "0461",
+      "age": 23,
+      "seconds": 3.614,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 7,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 87,
+        "FluencyScore": 89,
+        "ProsodyScore": 77.7,
+        "CompletenessScore": 80,
+        "PronScore": 82.3
+      }
+    },
+    {
+      "text": "NO YOU HAVE TO PICK",
+      "speaker": "0120",
+      "age": 19,
+      "seconds": 2.472,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.4,
+        "CompletenessScore": 100,
+        "PronScore": 95.6
+      }
+    },
+    {
+      "text": "THEY WALKED THE REST OF THE DAY AND ALL NIGHT.",
+      "speaker": "9601",
+      "age": 25,
+      "seconds": 6.788,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 88,
+        "FluencyScore": 77,
+        "ProsodyScore": 45,
+        "CompletenessScore": 100,
+        "PronScore": 71
+      }
+    },
+    {
+      "text": "THERE WAS ONE RIGHT IN FRONT OF ME.",
+      "speaker": "9629",
+      "age": 25,
+      "seconds": 8.98,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 5,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 70,
+        "FluencyScore": 51,
+        "ProsodyScore": 50.5,
+        "CompletenessScore": 62,
+        "PronScore": 56.8
+      }
+    },
+    {
+      "text": "EVEN WHEN WE LOSE IT USUALLY A VERY CLOSE GAME",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 4.67,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 99,
+        "ProsodyScore": 83.7,
+        "CompletenessScore": 90,
+        "PronScore": 90.1
+      }
+    },
+    {
+      "text": "HE LOOKED HERE AND THERE.",
+      "speaker": "9617",
+      "age": 35,
+      "seconds": 3.01,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 82,
+        "FluencyScore": 76,
+        "ProsodyScore": 66.4,
+        "CompletenessScore": 80,
+        "PronScore": 74.2
+      }
+    },
+    {
+      "text": "BUT NOT VERY LONG WAS SHE LEFT IN DOUBT.",
+      "speaker": "9618",
+      "age": 24,
+      "seconds": 5.753,
+      "expert": {
+        "accuracy": 3,
+        "fluency": 6,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 3
+      },
+      "azure": {
+        "AccuracyScore": 77,
+        "FluencyScore": 79,
+        "ProsodyScore": 49.2,
+        "CompletenessScore": 78,
+        "PronScore": 66.5
+      }
+    },
+    {
+      "text": "ROLL UP TO THE PARTY LIKE",
+      "speaker": "2438",
+      "age": 21,
+      "seconds": 2.38,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.5,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "TAKING A WALK TO THE STORE",
+      "speaker": "1156",
+      "age": 33,
+      "seconds": 2.947,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.5,
+        "CompletenessScore": 100,
+        "PronScore": 95.6
+      }
+    },
+    {
+      "text": "I HAD LEFT IT BEHIND.",
+      "speaker": "9622",
+      "age": 20,
+      "seconds": 5.3,
+      "expert": {
+        "accuracy": 5,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 5
+      },
+      "azure": {
+        "AccuracyScore": 51,
+        "FluencyScore": 53,
+        "ProsodyScore": 36.6,
+        "CompletenessScore": 40,
+        "PronScore": 43.4
+      }
+    },
+    {
+      "text": "IT'S BEING USED TO MAKE MORE MONEY",
+      "speaker": "0461",
+      "age": 23,
+      "seconds": 3.73,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 7,
+        "prosodic": 7,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 74.3,
+        "CompletenessScore": 100,
+        "PronScore": 89.1
+      }
+    },
+    {
+      "text": "WHAT IS GOING ON IN MY LIFE RIGHT NOW",
+      "speaker": "0736",
+      "age": 21,
+      "seconds": 3.83,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 8,
+        "prosodic": 5,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 86,
+        "FluencyScore": 100,
+        "ProsodyScore": 70.9,
+        "CompletenessScore": 89,
+        "PronScore": 83.4
+      }
+    },
+    {
+      "text": "BUT DO YOU HAVE IT IN BLACK",
+      "speaker": "2917",
+      "age": 19,
+      "seconds": 2.933,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 90,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "SHE FOLLOWED HIM WITH HER EYES",
+      "speaker": "2327",
+      "age": 22,
+      "seconds": 3.19,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 89,
+        "FluencyScore": 100,
+        "ProsodyScore": 85.4,
+        "CompletenessScore": 83,
+        "PronScore": 88.1
+      }
+    },
+    {
+      "text": "LAY OFF GIVE IT A REST",
+      "speaker": "0567",
+      "age": 21,
+      "seconds": 3.47,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 6,
+        "prosodic": 6,
+        "completeness": 10,
+        "total": 6
+      },
+      "azure": {
+        "AccuracyScore": 92,
+        "FluencyScore": 87,
+        "ProsodyScore": 80.6,
+        "CompletenessScore": 100,
+        "PronScore": 88
+      }
+    },
+    {
+      "text": "HE LOOKED AT ME AND SMILED AND I SMILED BACK.",
+      "speaker": "9623",
+      "age": 21,
+      "seconds": 11.4,
+      "expert": {
+        "accuracy": 4,
+        "fluency": 4,
+        "prosodic": 4,
+        "completeness": 10,
+        "total": 4
+      },
+      "azure": {
+        "AccuracyScore": 70,
+        "FluencyScore": 73,
+        "ProsodyScore": 42.1,
+        "CompletenessScore": 60,
+        "PronScore": 57.4
+      }
+    }
+  ]
+}

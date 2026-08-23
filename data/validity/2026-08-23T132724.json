@@ -1,0 +1,414 @@
+{
+  "dataset": "mispeech/speechocean762",
+  "args": {
+    "n": 20,
+    "minAge": 16
+  },
+  "skipped": {
+    "tooYoung": 20,
+    "notRecognized": 0,
+    "badAudio": 0
+  },
+  "scored": [
+    {
+      "text": "IT WAS GOOD FOR ME",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.211,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 90,
+        "CompletenessScore": 100,
+        "PronScore": 96
+      }
+    },
+    {
+      "text": "WE HAVE CLIMBED ONE STEP UP THE LADDER",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.48,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 92,
+        "FluencyScore": 99,
+        "ProsodyScore": 81.9,
+        "CompletenessScore": 88,
+        "PronScore": 88.6
+      }
+    },
+    {
+      "text": "PLUS THE KIDS REALLY LIKE THE DOGS",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.1,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.5,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "EVEN WHEN WE LOSE IT USUALLY A VERY CLOSE GAME",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 4.67,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 94,
+        "FluencyScore": 99,
+        "ProsodyScore": 83.7,
+        "CompletenessScore": 90,
+        "PronScore": 90.1
+      }
+    },
+    {
+      "text": "MOSTLY THE AMERICAN COMMUNITY IN EUROPE FOLLOWS THE GAME",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 5.52,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 96,
+        "ProsodyScore": 87.3,
+        "CompletenessScore": 100,
+        "PronScore": 93.7
+      }
+    },
+    {
+      "text": "WHAT HE WAS TALKING ABOUT WAS SPORTS IN GENERAL",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.92,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 8,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 81.8,
+        "CompletenessScore": 100,
+        "PronScore": 92.3
+      }
+    },
+    {
+      "text": "WAY TO HELP US ALL OUT",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.77,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 8,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 98,
+        "ProsodyScore": 88.4,
+        "CompletenessScore": 100,
+        "PronScore": 94.6
+      }
+    },
+    {
+      "text": "LOVELY TO MAKE YOUR ACQUAINTANCE SIR",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.16,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 84.9,
+        "CompletenessScore": 100,
+        "PronScore": 93.4
+      }
+    },
+    {
+      "text": "SUCCESSFUL FIRST DAY FOR COLLEGE",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.266,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 99,
+        "ProsodyScore": 90.4,
+        "CompletenessScore": 100,
+        "PronScore": 95.4
+      }
+    },
+    {
+      "text": "THIS IS A PRETTY GOOD PLACE TO START",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.064,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 90.9,
+        "CompletenessScore": 100,
+        "PronScore": 96
+      }
+    },
+    {
+      "text": "LOVE IS A STRONG MAN IN THE MIDDLE",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.79,
+      "expert": {
+        "accuracy": 10,
+        "fluency": 10,
+        "prosodic": 10,
+        "completeness": 10,
+        "total": 10
+      },
+      "azure": {
+        "AccuracyScore": 100,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.5,
+        "CompletenessScore": 100,
+        "PronScore": 95.4
+      }
+    },
+    {
+      "text": "SOMEBODY LET ME KNOW WHEN IT'S OVER",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.03,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 83.6,
+        "CompletenessScore": 100,
+        "PronScore": 93
+      }
+    },
+    {
+      "text": "YOU PUT IT ON WRONG",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.17,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 78.8,
+        "CompletenessScore": 100,
+        "PronScore": 90.9
+      }
+    },
+    {
+      "text": "COMPETITION IS GOOD FOR THE INDUSTRY",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.31,
+      "expert": {
+        "accuracy": 8,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 87.7,
+        "CompletenessScore": 100,
+        "PronScore": 94.7
+      }
+    },
+    {
+      "text": "SHE LOOKED ANXIOUSLY AT THE HOUSE AND STARTED",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.65,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 99,
+        "ProsodyScore": 87,
+        "CompletenessScore": 100,
+        "PronScore": 94.2
+      }
+    },
+    {
+      "text": "THEY MAY MAKE ME MORE UNHAPPY THAN I AM",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.91,
+      "expert": {
+        "accuracy": 7,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 7
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 78.9,
+        "CompletenessScore": 100,
+        "PronScore": 91.4
+      }
+    },
+    {
+      "text": "SHE WOULD BE SORRY FOR HIS DEATH",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.68,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 9
+      },
+      "azure": {
+        "AccuracyScore": 97,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.2,
+        "CompletenessScore": 100,
+        "PronScore": 95.1
+      }
+    },
+    {
+      "text": "MY PEOPLE WILL BRING YOU TO THE SHIP",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.11,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 9,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 99,
+        "FluencyScore": 100,
+        "ProsodyScore": 89.9,
+        "CompletenessScore": 100,
+        "PronScore": 95.8
+      }
+    },
+    {
+      "text": "IT WAS A PROOF OF HIS FRIENDSHIP",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 2.83,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 88.8,
+        "CompletenessScore": 100,
+        "PronScore": 95.1
+      }
+    },
+    {
+      "text": "I FOUND I HAD NO NEED TO THINK",
+      "speaker": "0024",
+      "age": 25,
+      "seconds": 3.1,
+      "expert": {
+        "accuracy": 9,
+        "fluency": 9,
+        "prosodic": 8,
+        "completeness": 10,
+        "total": 8
+      },
+      "azure": {
+        "AccuracyScore": 98,
+        "FluencyScore": 100,
+        "ProsodyScore": 80.2,
+        "CompletenessScore": 100,
+        "PronScore": 91.7
+      }
+    }
+  ]
+}
