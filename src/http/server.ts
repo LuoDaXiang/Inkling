@@ -22,8 +22,22 @@ export interface ServerDeps {
   defaultVoice: string;
 }
 
-/** 请求体上限。框架会替你做这件事，手写就得自己做。 */
-const MAX_BODY_BYTES = 64 * 1024;
+/**
+ * 请求体上限。框架会替你做这件事，手写就得自己做。
+ *
+ * 按路由分开，因为两类请求的量级差三个数量级：
+ *
+ *   JSON  一段待合成的文本，几 KB 顶天
+ *   音频  16kHz 单声道 16bit = 32,000 字节/秒，30 秒就是 960KB
+ *
+ * 之前只有一个 64KB 的常量，当时脑子里想的是 JSON。等 M03 上传录音时，
+ * **任何超过 2 秒的录音都会被自己的服务器拒掉**——而错误信息会说
+ * 「请求体过大」，看不出真正的原因。趁还没写录音路由先分开。
+ */
+const MAX_JSON_BYTES = 64 * 1024;
+
+/** 30 秒 16kHz 单声道音频约 960KB，留一点余量。 */
+export const MAX_AUDIO_BYTES = 1024 * 1024;
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -89,7 +103,7 @@ async function postTts(
 ): Promise<void> {
   let body: string;
   try {
-    body = await readBody(req);
+    body = await readBody(req, MAX_JSON_BYTES);
   } catch (err) {
     return sendJson(res, 413, { error: "too_long", message: describe(err) });
   }
@@ -189,16 +203,16 @@ async function getStatic(res: ServerResponse, path: string, publicDir: string): 
 }
 
 /** 边收边数字节，超限立刻断开——不能等收完再判断，那时内存已经吃进去了。 */
-function readBody(req: IncomingMessage): Promise<string> {
+function readBody(req: IncomingMessage, limit: number): Promise<string> {
   return new Promise((resolvePromise, rejectPromise) => {
     const chunks: Buffer[] = [];
     let size = 0;
 
     req.on("data", (chunk: Buffer) => {
       size += chunk.byteLength;
-      if (size > MAX_BODY_BYTES) {
+      if (size > limit) {
         req.destroy();
-        rejectPromise(new Error(`请求体超过 ${MAX_BODY_BYTES} 字节`));
+        rejectPromise(new Error(`请求体超过 ${limit} 字节`));
         return;
       }
       chunks.push(chunk);

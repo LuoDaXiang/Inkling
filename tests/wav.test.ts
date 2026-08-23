@@ -1,5 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { parseWav, buildWav, InvalidWavError } from "@/core/audio/wav";
+import { parseWav, buildWav, assertAssessable, InvalidWavError } from "@/core/audio/wav";
+import type { WavInfo } from "@/core/audio/wav";
 
 /**
  * 校验器本身也要被测——而且要正反两面都测：
@@ -103,5 +104,97 @@ describe("parseWav", () => {
 
       expectReject(padded, /多余数据/);
     });
+  });
+
+  // RIFF 是块结构，不是固定布局。此前这里按「data 一定在偏移 36」硬读，
+  // 凡是 ffmpeg 转出来的文件（带 LIST INFO 块）一概拒收——而 Azure 照单全收。
+  // 我们自己的 TTS 和测试数据恰好都产干净的 44 字节头，所以整套测试全部漏过。
+  describe("真实世界的 WAV 变体必须接受", () => {
+    /** fmt 和 data 之间插一个块，模拟 ffmpeg / Audacity 的产物。 */
+    const withChunk = (id: string, payload: string, samples = 1600): Uint8Array => {
+      const dataBytes = samples * 2;
+      const pad = payload.length % 2; // RIFF 规范：奇数长度的块要补一个字节
+      const total = 12 + 24 + (8 + payload.length + pad) + 8 + dataBytes;
+      const buffer = new ArrayBuffer(total);
+      const view = new DataView(buffer);
+      let offset = 0;
+      const text = (s: string): void => {
+        for (const ch of s) view.setUint8(offset++, ch.charCodeAt(0));
+      };
+      const u32 = (x: number): void => {
+        view.setUint32(offset, x, true);
+        offset += 4;
+      };
+      const u16 = (x: number): void => {
+        view.setUint16(offset, x, true);
+        offset += 2;
+      };
+
+      text("RIFF");
+      u32(total - 8);
+      text("WAVE");
+      text("fmt ");
+      u32(16);
+      u16(1);
+      u16(1);
+      u32(16000);
+      u32(32000);
+      u16(2);
+      u16(16);
+      text(id);
+      u32(payload.length);
+      for (const ch of payload) view.setUint8(offset++, ch.charCodeAt(0));
+      offset += pad;
+      text("data");
+      u32(dataBytes);
+      return new Uint8Array(buffer);
+    };
+
+    test("LIST INFO 块，偶数长度", () => {
+      const info = parseWav(withChunk("LIST", "INFOISFT\u0000Lavf58.29.10\u0000"));
+      expect(info.sampleRate).toBe(16000);
+      expect(info.channels).toBe(1);
+    });
+
+    test("LIST INFO 块，奇数长度需要填充字节", () => {
+      const info = parseWav(withChunk("LIST", "INFOISFT\u0000Lavf58.29.100\u0000"));
+      expect(info.dataBytes).toBe(3200);
+    });
+
+    test("fact 块", () => {
+      const info = parseWav(withChunk("fact", "\u0000\u0000\u0000\u0000"));
+      expect(info.sampleRate).toBe(16000);
+    });
+
+    test("多个块连续出现", () => {
+      const info = parseWav(withChunk("cue ", "0123456789abcdef"));
+      expect(info.channels).toBe(1);
+    });
+  });
+});
+
+describe("assertAssessable", () => {
+  const at = (seconds: number): WavInfo => ({
+    sampleRate: 16000,
+    channels: 1,
+    bitsPerSample: 16,
+    dataBytes: seconds * 32000,
+    duration: seconds,
+  });
+
+  test("30 秒以内放行", () => {
+    expect(() => assertAssessable(at(29.9))).not.toThrow();
+  });
+
+  test("恰好 30 秒放行（边界）", () => {
+    expect(() => assertAssessable(at(30))).not.toThrow();
+  });
+
+  test("超过 30 秒拒绝", () => {
+    // 实测：73 秒的音频，Azure 返回 HTTP 200、状态 Success、完整度 49
+    // （约等于 35/73）。它静默截断，不报错。用户完整读完却看到完整度腰斩，
+    // 会以为自己漏读了一半。这一条必须在送出前挡住。
+    expect(() => assertAssessable(at(30.1))).toThrow(InvalidWavError);
+    expect(() => assertAssessable(at(73))).toThrow(/静默截断/);
   });
 });
