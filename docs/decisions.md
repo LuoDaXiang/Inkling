@@ -283,3 +283,97 @@ Content-Type，这些是框架替你做掉、但迟早要懂的东西。
 
 **顺带**：live 测试现在会在整组跳过时打印一行原因，而不是静默跳过。
 「跳过」和「没配置所以跳过」是两个不同的信息。
+
+---
+
+## 0015 — 发音评估走 REST，并开启 prosody
+
+**日期**：2026-08-23
+**状态**：已采纳（已用真实调用验证）
+
+延续 0010 对 TTS 的同一判断：REST，不引 SDK。运行时依赖保持为空。
+
+**端点与请求形状**（已核实，第一次真实调用即通过）：
+
+```
+POST https://{region}.stt.speech.microsoft.com
+     /speech/recognition/conversation/cognitiveservices/v1?language=en-US
+
+Ocp-Apim-Subscription-Key: {key}
+Content-Type: audio/wav; codecs=audio/pcm; samplerate=16000
+Pronunciation-Assessment: {下面这段 JSON 的 base64}
+Accept: application/json
+
+{ "ReferenceText": "...", "GradingSystem": "HundredMark",
+  "Granularity": "Phoneme", "Dimension": "Comprehensive",
+  "EnableProsodyAssessment": "True" }
+```
+
+**响应结构与 SDK 不同，这一点会坑人**：REST 原始报文比 SDK 扁一层——
+五项分数直接挂在 `NBest[0]` 上（`AccuracyScore` / `FluencyScore` /
+`ProsodyScore` / `CompletenessScore` / `PronScore`），**不在
+`PronunciationAssessment` 子对象里**。照着 SDK 的字段路径取会全部拿到
+`undefined`，而且不报错。第一版测试就是这么写错的。
+
+逐词同理：`Words[i].AccuracyScore` 和 `Words[i].ErrorType` 直接挂在词上。
+
+**实测数据**（TTS 合成的 en-US-AvaNeural，13 词）：
+
+| 场景 | 准确度 | 流利度 | 完整度 | 语调 | 总分 |
+| --- | --- | --- | --- | --- | --- |
+| 参考文本对上 | 96 | 100 | 100 | 91 | 95.6 |
+| 参考文本对不上 | 13 | 0 | 0 | 59.6 | 14.5 |
+
+区分度足够。另外机器给自己合成的语音打 95.6 而不是 100，语调只给 91——
+说明它没有盲目偏爱合成语音，这对「用它给人打分」是个好信号。
+
+---
+
+## 0016 — 逐词语调反馈比总分更有价值
+
+**日期**：2026-08-23
+**状态**：已采纳
+
+开启 prosody 之后，响应里每个词还带一个 `Feedback.Prosody`：
+
+```json
+{ "Break": { "ErrorTypes": ["None"], "BreakLength": 0,
+             "UnexpectedBreak": { "Confidence": ... },
+             "MissingBreak": { "Confidence": ... } },
+  "Intonation": { "ErrorTypes": [],
+                  "Monotone": { "Confidence": 0,
+                                "WordPitchSlopeConfidence": 0,
+                                "SyllablePitchDeltaConfidence": 0.54 } } }
+```
+
+`Monotone` 是单调检测。一个 ProsodyScore 只能告诉用户「语调不太好」，
+而 `Monotone.Confidence` 能逐词指出**哪几个词读平了**，`Break` 能指出
+**哪里该停没停、哪里不该停却停了**。
+
+跟读训练需要的是后者：知道错在哪，而不是知道自己得了几分。
+
+**因此**：`ScoringProvider` 的返回类型必须保留逐词明细，不能只回五个数字。
+M04 建这一层时，数据模型要为 `Words[]` 留位置。
+
+**顺带**：响应还有一个顶层 `SNR`（信噪比，实测 38.7）。将来可以用它
+提示「你的麦克风太吵，先换个环境再练」——这是个不用额外成本就能给的提示。
+
+---
+
+## 0017 — 不抄 Enjoy 的超长音频合并算法
+
+**日期**：2026-08-23
+**状态**：已采纳
+
+Enjoy 在 `use-pronunciation-assessments.tsx` 里以 30 秒为界：短音频用
+`recognizeOnceAsync`，长音频用连续识别切段后合并。这证实了 30 秒是硬上限。
+
+但它的合并是**等权平均**：1 秒的片段和 20 秒的片段权重相同。
+`CompletenessScore` 取平均更是没有意义——完整度衡量的是「参考文本被念了多少」，
+把两段的完整度相加除以二不对应任何东西。
+
+**本项目的做法**：不在评分层合并。在**分句阶段**就保证每一句都是可评分单元
+（见 roadmap 的 F3），一句一评、一句一分。跟读训练本来就是按句练的，
+没有理由把一段三十秒以上的音频当成一个整体去评。
+
+这样既避开了合并的数学问题，也让反馈粒度和练习粒度对齐。
