@@ -310,12 +310,15 @@ function render(data) {
   const unreliable = data.outcome === "unreliable";
   els.resultTitle.textContent = unreliable ? "结果可能不可信" : "评分";
 
-  // 只展示三个维度。完整度不展示——朗读场景下专家全给满分，没有区分度，
-  // 而服务端平均只给 86.7，展示它只会制造无意义的焦虑。见 decisions 0019。
+  // 准确度排第一并高亮——说话首先要说准，流利和语调是在「说准了」之上的加分。
+  // 见 decisions 0035。
+  //
+  // 完整度不展示：朗读场景下专家全给满分，没有区分度，而服务端平均只给 86.7，
+  // 展示它只会制造无意义的焦虑。见 decisions 0019。
   const dims = [
-    ["语调", data.scores.prosody, true],
-    ["准确度", data.scores.accuracy, false],
+    ["准确度", data.scores.accuracy, true],
     ["流利度", data.scores.fluency, false],
+    ["语调", data.scores.prosody, false],
   ];
   for (const [label, value, hero] of dims) {
     const div = document.createElement("div");
@@ -324,23 +327,40 @@ function render(data) {
     els.scores.appendChild(div);
   }
 
-  // 逐词明细。这是相对参考实现的差异化：一个总分只能说「语调不太好」，
-  // 逐词能说「第 3、7、11 个词读平了」。
+  // 逐词明细。一个总分只能说「读得不太准」，逐词能说「第 3、7 个词念错了」——
+  // 后者才是能拿去改的东西。
+  //
+  // 标记有优先级：念错了（红）盖过读得平（黄）。一个词两样都占的时候，
+  // 先告诉用户念错了——把音念对是基础，语调是在这之上的事。
+  const LOW_ACCURACY = 60;
   for (const w of data.words ?? []) {
     const span = document.createElement("span");
     span.textContent = w.word;
-    if (w.errorType !== "None") span.className = "miss";
+    if (w.errorType !== "None" || w.accuracy < LOW_ACCURACY) span.className = "miss";
     else if ((w.monotone ?? 0) > 0.5) span.className = "flat";
-    span.title = `准确度 ${w.accuracy}${w.errorType !== "None" ? " · " + w.errorType : ""}`;
+    span.title =
+      `准确度 ${w.accuracy}` +
+      (w.errorType !== "None" ? " · " + w.errorType : "") +
+      (w.phonemes?.length ? "\n" + w.phonemes.map((p) => `${p.phoneme} ${p.accuracy}`).join("  ") : "");
     els.words.appendChild(span);
   }
 
-  const flat = (data.words ?? []).filter((w) => (w.monotone ?? 0) > 0.5).length;
+  const words = data.words ?? [];
+  const wrong = words.filter((w) => w.errorType !== "None" || w.accuracy < LOW_ACCURACY);
+  const flat = words.filter(
+    (w) => w.errorType === "None" && w.accuracy >= LOW_ACCURACY && (w.monotone ?? 0) > 0.5,
+  ).length;
+
+  // 先说准确度的问题，再说语调——顺序反过来会让用户去调语调，
+  // 而真正该改的是那几个念错的音。
   els.resultNote.textContent = unreliable
     ? "各项指标显示这更像是环境噪声而不是朗读。换个安静的地方再试一次。"
-    : flat > 0
-      ? `有 ${flat} 个词读得偏平，标黄的就是。`
-      : "语调起伏正常。";
+    : wrong.length > 0
+      ? `${wrong.length} 个词念得不准，标红的就是——鼠标悬停能看到具体是哪个音素。` +
+        (flat > 0 ? `另有 ${flat} 个词读得偏平。` : "")
+      : flat > 0
+        ? `发音都念准了。有 ${flat} 个词读得偏平，标黄的就是。`
+        : "念准了，语调也自然。";
 
   els.resultMeta.textContent =
     `识别到  ${data.recognized ?? "—"}\n` +
@@ -352,9 +372,12 @@ function render(data) {
 /**
  * 分数只展示分档，不展示原始百分数。
  *
- * 实测准确度和流利度系统性偏高约 20 分——直接展示会让用户以为
- * 自己比实际水平好得多。切点用效度测量的数据反推，不是拍脑袋定的。
- * 见 decisions 0019。
+ * 实测准确度和流利度系统性偏高约 20 分（专家均分 65.8，服务端给 85.7）——
+ * 直接展示会让用户以为自己比实际水平好得多。
+ *
+ * **这一条对准确度尤其要紧**，因为它是主打维度：主打维度报一个虚高的数字，
+ * 整个产品的可信度就没了。分档的切点用效度测量的数据反推，不是拍脑袋定的。
+ * 见 decisions 0019 与 0035。
  */
 function band(score) {
   if (score >= 85) return "很好";

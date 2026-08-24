@@ -68,13 +68,16 @@ export class AzureScoringProvider implements ScoringProvider {
     }
 
     const language = config.language ?? DEFAULT_LANGUAGE;
-    // 语调只支持 en-US。用别的区域设置不会报错，只是 ProsodyScore 静默缺席——
-    // 而语调是这个产品的主打维度，所以这里当场拒绝而不是让它悄悄降级。
+    // 语调只支持 en-US。用别的区域设置不会报错，只是 ProsodyScore 静默缺席。
+    //
+    // 当场拒绝而不是让它悄悄降级——规则是「静默缺席的东西一律不许存在」。
+    // 一个少了一维的评分结果和完整的结果长得一模一样，没有任何东西会提醒你，
+    // 这正是这个项目反复栽过的那类坑。
     if (language !== DEFAULT_LANGUAGE) {
       throw new ServiceError(
         "rejected",
         `语调评估只支持 ${DEFAULT_LANGUAGE}，收到 ${language}。` +
-          `换别的区域设置会让语调分静默缺席，而它是本项目的主打维度。`,
+          `换别的区域设置会让语调分静默缺席，而静默降级比报错糟糕得多。`,
       );
     }
 

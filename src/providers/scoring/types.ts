@@ -32,15 +32,19 @@ export interface Phoneme {
 
 export interface WordScore {
   word: string;
+  /** 主打维度的落脚点。逐词准确度配合下面的 phonemes 才能说清楚错在哪个音。 */
   accuracy: number;
   errorType: WordErrorType;
   phonemes: Phoneme[];
   /**
    * 单调程度，0–1。
    *
-   * 这是逐词语调反馈里最有用的一项：一个总分只能告诉用户「语调不太好」，
-   * 这个能指出**哪几个词读平了**。跟读训练要的是后者。
-   * 见 docs/decisions.md 0016。
+   * 逐词语调反馈：一个总分只能告诉用户「语调不太好」，这个能指出
+   * **哪几个词读平了**。见 docs/decisions.md 0016。
+   *
+   * 注意它在界面上排在准确度之后——念错的词优先标出来，
+   * 一个词两样都占时先报念错。把音念对是基础，语调是在这之上的事。
+   * 见 docs/decisions.md 0035。
    */
   monotone?: number;
   /** 停顿异常。 */
