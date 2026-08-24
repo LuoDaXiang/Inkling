@@ -6,43 +6,34 @@
 <title>Inkling</title>
 <style>
   :root {
-    --ground: #f4f5f6;
-    --surface: #ffffff;
-    --ink: #1a1f24;
-    --ink-soft: #5c676e;
-    --line: #d8dee0;
-    --accent: #0e6f78;
-    --bad: #9c2f2f;
+    --ground: #f4f5f6; --surface: #ffffff; --surface-2: #eceef0;
+    --ink: #1a1f24; --ink-soft: #5c676e; --ink-faint: #8b979e;
+    --line: #d8dee0; --accent: #0e6f78; --bad: #9c2f2f;
+    --good: #2f6b45; --warn: #a15612;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --ground: #101417;
-      --surface: #191e22;
-      --ink: #e6eaec;
-      --ink-soft: #949fa6;
-      --line: #2a3236;
-      --accent: #4ec3cd;
-      --bad: #e8807f;
+      --ground: #101417; --surface: #191e22; --surface-2: #222932;
+      --ink: #e6eaec; --ink-soft: #949fa6; --ink-faint: #6c7a82;
+      --line: #2a3236; --accent: #4ec3cd; --bad: #e8807f;
+      --good: #6fc08d; --warn: #df9942;
     }
   }
   * { box-sizing: border-box; }
   body {
-    margin: 0;
-    padding: 48px 20px 80px;
-    background: var(--ground);
-    color: var(--ink);
+    margin: 0; padding: 40px 20px 80px;
+    background: var(--ground); color: var(--ink);
     font: 16px/1.6 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
   }
-  main { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  main { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
   h1 { margin: 0; font-size: 1.5rem; letter-spacing: -.02em; }
-  h1 small { font-weight: 400; font-size: .8rem; color: var(--ink-soft); margin-left: 8px; }
+  h1 small { font-weight: 400; font-size: .8rem; color: var(--ink-faint); margin-left: 8px; }
   textarea {
-    width: 100%; min-height: 120px; padding: 14px 16px; resize: vertical;
+    width: 100%; min-height: 90px; padding: 14px 16px; resize: vertical;
     background: var(--surface); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 4px;
-    font: inherit; line-height: 1.6;
+    border: 1px solid var(--line); border-radius: 4px; font: inherit; line-height: 1.6;
   }
-  textarea:focus-visible, button:focus-visible {
+  textarea:focus-visible, button:focus-visible, select:focus-visible {
     outline: 2px solid var(--accent); outline-offset: 2px;
   }
   .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
@@ -51,36 +42,61 @@
     background: var(--accent); color: var(--ground);
     font: inherit; font-weight: 600; cursor: pointer;
   }
-  button:disabled { opacity: .5; cursor: default; }
+  button.ghost { background: var(--surface-2); color: var(--ink); }
+  button.rec { background: var(--bad); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
   label { font-size: 14px; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; }
   select {
     padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
     background: var(--surface); color: var(--ink); font: inherit; font-size: 14px;
   }
   audio { width: 100%; }
-  #status { font-size: 14px; color: var(--ink-soft); min-height: 1.6em; }
-  #status.error { color: var(--bad); }
-  #meta {
-    font: 12px/1.7 ui-monospace, "SF Mono", Menlo, monospace;
-    color: var(--ink-soft); white-space: pre-wrap;
+  .status { font-size: 14px; color: var(--ink-soft); min-height: 1.6em; }
+  .status.error { color: var(--bad); }
+  .meta { font: 12px/1.7 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink-faint); white-space: pre-wrap; }
+  section {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 4px; padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 14px;
   }
+  section h2 {
+    margin: 0; font-size: .78rem; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .timer {
+    font: 600 1.6rem/1 ui-monospace, Menlo, monospace;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .track { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .track > div { height: 100%; width: 0; background: var(--bad); transition: width .1s linear; }
+  .scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .score { display: flex; flex-direction: column; gap: 2px; }
+  .score b { font: 600 1.5rem/1 ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .score small { font-size: 12px; color: var(--ink-faint); }
+  .score.hero b { color: var(--accent); }
+  .words { display: flex; flex-wrap: wrap; gap: 6px; line-height: 2; }
+  .words span { padding: 2px 6px; border-radius: 3px; font-size: 15px; }
+  .words span.flat { background: color-mix(in srgb, var(--warn) 20%, transparent); }
+  .words span.miss { background: color-mix(in srgb, var(--bad) 20%, transparent); text-decoration: underline wavy var(--bad); }
+  .note { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+  .note b { color: var(--ink); }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
 <main>
-  <h1>Inkling <small>M01 · TTS</small></h1>
+  <h1>Inkling <small>M03 · 跟读</small></h1>
 
   <textarea id="text" spellcheck="false"
-    placeholder="粘一句英文，点合成">The quick brown fox jumps over the lazy dog while the cat watches.</textarea>
+    placeholder="粘一句英文">The quick brown fox jumps over the lazy dog.</textarea>
 
   <div class="bar">
-    <button id="go">合成</button>
+    <button id="synth">合成范本</button>
     <label>音色
       <select id="voice">
         <option value="">默认</option>
         <option value="en-US-AvaNeural">Ava（女）</option>
         <option value="en-US-AndrewNeural">Andrew（男）</option>
-        <option value="en-US-EmmaNeural">Emma（女）</option>
       </select>
     </label>
     <label>语速
@@ -88,77 +104,287 @@
         <option value="">1.0×</option>
         <option value="0.8">0.8×</option>
         <option value="0.9">0.9×</option>
-        <option value="1.2">1.2×</option>
       </select>
     </label>
   </div>
 
-  <p id="status"></p>
-  <audio id="player" controls hidden></audio>
-  <p id="meta"></p>
+  <p class="status" id="status"></p>
+  <audio id="model" controls hidden></audio>
+
+  <section id="recSection">
+    <h2>跟读</h2>
+    <div class="bar">
+      <button id="rec" class="rec">开始录音</button>
+      <button id="cancel" class="ghost" hidden>取消</button>
+      <span class="timer" id="timer" hidden>0.0s</span>
+    </div>
+    <div class="track" hidden id="trackWrap"><div id="track"></div></div>
+    <p class="status" id="recStatus"></p>
+    <audio id="mine" controls hidden></audio>
+  </section>
+
+  <section id="result" hidden>
+    <h2 id="resultTitle">评分</h2>
+    <div class="scores" id="scores"></div>
+    <div class="words" id="words"></div>
+    <p class="note" id="resultNote"></p>
+    <p class="meta" id="resultMeta"></p>
+  </section>
 </main>
 
 <script type="module">
-const $ = (id) => document.getElementById(id);
-const [text, voice, speed, go, status, player, meta] =
-  ["text", "voice", "speed", "go", "status", "player", "meta"].map($);
+import { Recorder, TARGET_SAMPLE_RATE } from "./recorder.js";
 
-function say(message, isError = false) {
-  status.textContent = message;
-  status.classList.toggle("error", isError);
+const $ = (id) => document.getElementById(id);
+const els = Object.fromEntries(
+  ["text","synth","voice","speed","status","model","rec","cancel","timer","track","trackWrap",
+   "recStatus","mine","result","resultTitle","scores","words","resultNote","resultMeta"]
+    .map((id) => [id, $(id)]));
+
+const MAX_SECONDS = 30;
+const MAX_SAMPLES = MAX_SECONDS * TARGET_SAMPLE_RATE;
+
+let samples = 0;
+let recording = false;
+let myUrl = null;
+
+function say(el, message, isError = false) {
+  el.textContent = message;
+  el.classList.toggle("error", isError);
 }
 
-go.addEventListener("click", async () => {
-  const body = { text: text.value };
-  if (voice.value) body.voice = voice.value;
-  if (speed.value) body.speed = Number(speed.value);
+// ---- 合成范本 ----
 
-  go.disabled = true;
-  say("合成中…");
-  meta.textContent = "";
-  const started = performance.now();
+els.synth.addEventListener("click", async () => {
+  const body = { text: els.text.value };
+  if (els.voice.value) body.voice = els.voice.value;
+  if (els.speed.value) body.speed = Number(els.speed.value);
 
+  els.synth.disabled = true;
+  say(els.status, "合成中…");
   try {
     const res = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
     const data = await res.json();
+    if (!res.ok) return say(els.status, `${describe(data.error)}：${data.message}`, true);
 
-    if (!res.ok) {
-      // 服务端把错误分了类，前端照着分类说人话，而不是甩一个状态码。
-      say(`${describe(data.error)}：${data.message}`, true);
-      return;
-    }
-
-    const ms = Math.round(performance.now() - started);
-    player.src = data.url;
-    player.hidden = false;
-    say(data.cached ? "命中缓存，没有调用 Azure" : "合成完成");
-    meta.textContent =
-      `key    ${data.key}\n` +
-      `format ${data.format}  ${data.bytes.toLocaleString()} 字节\n` +
-      `耗时   ${ms} ms${data.cached ? "（缓存）" : ""}`;
-    player.play().catch(() => {
-      // 浏览器可能拦截自动播放，用户点一下播放器就行，不算错误。
-    });
+    els.model.src = data.url;
+    els.model.hidden = false;
+    say(els.status, data.cached ? "命中缓存" : "合成完成");
+    els.model.play().catch(() => {});
   } catch (err) {
-    say(`请求失败：${err.message}`, true);
+    say(els.status, `请求失败：${err.message}`, true);
   } finally {
-    go.disabled = false;
+    els.synth.disabled = false;
   }
 });
 
+// ---- 录音 ----
+
+const support = Recorder.checkSupport();
+if (!support.ok) {
+  els.rec.disabled = true;
+  say(els.recStatus, support.reason, true);
+}
+
+const recorder = new Recorder({ onEvent: handleEvent });
+
+function handleEvent(event) {
+  // 浏览器层不做业务判断，只把事件翻译成界面。真正的状态迁移
+  // 由服务端那份状态机定义，这里只映射三个可见状态。
+  switch (event.type) {
+    case "granted":
+      recording = true;
+      samples = 0;
+      els.rec.textContent = "停止";
+      els.cancel.hidden = false;
+      els.timer.hidden = false;
+      els.trackWrap.hidden = false;
+      say(els.recStatus, "录音中…");
+      break;
+    case "chunk":
+      samples += event.samples;
+      els.timer.textContent = (samples / TARGET_SAMPLE_RATE).toFixed(1) + "s";
+      els.track.style.width = Math.min(100, (samples / MAX_SAMPLES) * 100) + "%";
+      // 到点直接停，不提示——提示会打断朗读，用户一分神这遍的流利度就毁了。
+      if (samples >= MAX_SAMPLES) finish();
+      break;
+    case "denied":
+      say(els.recStatus, "麦克风权限被拒绝。在地址栏左侧的图标里可以重新允许。", true);
+      reset();
+      break;
+    case "error":
+      say(els.recStatus, "打不开麦克风。检查一下是不是被别的程序占用了。", true);
+      reset();
+      break;
+  }
+}
+
+els.rec.addEventListener("click", () => {
+  if (recording) return finish();
+  els.result.hidden = true;
+  els.mine.hidden = true;
+  recorder.start({ echoCancellation: true, noiseSuppression: true, autoGainControl: true });
+});
+
+els.cancel.addEventListener("click", async () => {
+  await recorder.cancel();
+  reset();
+  say(els.recStatus, "已取消");
+});
+
+function reset() {
+  recording = false;
+  samples = 0;
+  els.rec.textContent = "开始录音";
+  els.cancel.hidden = true;
+  els.timer.hidden = true;
+  els.trackWrap.hidden = true;
+  els.track.style.width = "0";
+}
+
+async function finish() {
+  if (!recording) return;
+  recording = false;
+  els.rec.disabled = true;
+  const chunks = await recorder.stop();
+  reset();
+
+  if (chunks.length === 0) {
+    els.rec.disabled = false;
+    return say(els.recStatus, "没有录到声音", true);
+  }
+
+  // 把小块拼成一整段。每块在 worklet 里已经复制过了。
+  let total = 0;
+  for (const c of chunks) total += c.length;
+  const pcm = new Float32Array(total);
+  let offset = 0;
+  for (const c of chunks) { pcm.set(c, offset); offset += c.length; }
+
+  // 本地回放用。服务端不回传音频——它拿到的是原始采样，
+  // 转换和编码都在那边做，那些逻辑有 171 个用例覆盖。
+  if (myUrl) URL.revokeObjectURL(myUrl);
+  myUrl = URL.createObjectURL(new Blob([wavOf(pcm)], { type: "audio/wav" }));
+  els.mine.src = myUrl;
+  els.mine.hidden = false;
+
+  say(els.recStatus, `评分中…（${(total / TARGET_SAMPLE_RATE).toFixed(1)} 秒）`);
+
+  try {
+    const res = await fetch("/api/assess?reference=" + encodeURIComponent(els.text.value), {
+      method: "POST",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: pcm.buffer,
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      say(els.recStatus, `${describe(data.error)}：${data.message}`, true);
+      return;
+    }
+    say(els.recStatus, "");
+    render(data);
+  } catch (err) {
+    say(els.recStatus, `评分失败：${err.message}`, true);
+  } finally {
+    els.rec.disabled = false;
+  }
+}
+
+// ---- 展示评分 ----
+
+function render(data) {
+  els.result.hidden = false;
+  els.words.innerHTML = "";
+  els.scores.innerHTML = "";
+  els.resultMeta.textContent = "";
+
+  if (data.outcome === "no_speech") {
+    els.resultTitle.textContent = "没有听到声音";
+    els.resultNote.textContent = "录音里没有可识别的语音。检查一下麦克风，或者换个安静点的地方。";
+    return;
+  }
+
+  const unreliable = data.outcome === "unreliable";
+  els.resultTitle.textContent = unreliable ? "结果可能不可信" : "评分";
+
+  // 只展示三个维度。完整度不展示——朗读场景下专家全给满分，没有区分度，
+  // 而服务端平均只给 86.7，展示它只会制造无意义的焦虑。见 decisions 0019。
+  const dims = [
+    ["语调", data.scores.prosody, true],
+    ["准确度", data.scores.accuracy, false],
+    ["流利度", data.scores.fluency, false],
+  ];
+  for (const [label, value, hero] of dims) {
+    const div = document.createElement("div");
+    div.className = "score" + (hero ? " hero" : "");
+    div.innerHTML = `<b>${value == null ? "—" : band(value)}</b><small>${label}</small>`;
+    els.scores.appendChild(div);
+  }
+
+  // 逐词明细。这是相对参考实现的差异化：一个总分只能说「语调不太好」，
+  // 逐词能说「第 3、7、11 个词读平了」。
+  for (const w of data.words ?? []) {
+    const span = document.createElement("span");
+    span.textContent = w.word;
+    if (w.errorType !== "None") span.className = "miss";
+    else if ((w.monotone ?? 0) > 0.5) span.className = "flat";
+    span.title = `准确度 ${w.accuracy}${w.errorType !== "None" ? " · " + w.errorType : ""}`;
+    els.words.appendChild(span);
+  }
+
+  const flat = (data.words ?? []).filter((w) => (w.monotone ?? 0) > 0.5).length;
+  els.resultNote.textContent = unreliable
+    ? "各项指标显示这更像是环境噪声而不是朗读。换个安静的地方再试一次。"
+    : flat > 0
+      ? `有 ${flat} 个词读得偏平，标黄的就是。`
+      : "语调起伏正常。";
+
+  els.resultMeta.textContent =
+    `识别到  ${data.recognized ?? "—"}\n` +
+    `时长    ${data.seconds?.toFixed(2) ?? "—"}s` +
+    (data.trimmed ? `（掐掉首尾静音 ${((data.trimmed.start + data.trimmed.end) / TARGET_SAMPLE_RATE).toFixed(2)}s）` : "") +
+    (data.snr != null ? `\n信噪比  ${data.snr.toFixed(1)} dB` : "");
+}
+
+/**
+ * 分数只展示分档，不展示原始百分数。
+ *
+ * 实测准确度和流利度系统性偏高约 20 分——直接展示会让用户以为
+ * 自己比实际水平好得多。切点用效度测量的数据反推，不是拍脑袋定的。
+ * 见 decisions 0019。
+ */
+function band(score) {
+  if (score >= 85) return "很好";
+  if (score >= 70) return "不错";
+  if (score >= 50) return "可懂";
+  return "要重练";
+}
+
+/** 只给本地回放用的极简 WAV 封装。送去评分的是原始采样，不走这里。 */
+function wavOf(floats) {
+  const buf = new ArrayBuffer(44 + floats.length * 2);
+  const v = new DataView(buf);
+  const w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+  w(0, "RIFF"); v.setUint32(4, 36 + floats.length * 2, true); w(8, "WAVE");
+  w(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, TARGET_SAMPLE_RATE, true); v.setUint32(28, TARGET_SAMPLE_RATE * 2, true);
+  v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, "data"); v.setUint32(40, floats.length * 2, true);
+  for (let i = 0; i < floats.length; i++) {
+    const s = Math.max(-1, Math.min(1, floats[i]));
+    v.setInt16(44 + i * 2, s < 0 ? s * 32768 : s * 32767, true);
+  }
+  return buf;
+}
+
 function describe(kind) {
   return {
-    auth: "密钥有问题",
-    quota: "额度用完了",
-    network: "连不上 Azure",
-    rejected: "请求被拒绝",
-    too_long: "文本太长",
-    empty: "返回了空音频",
-    not_found: "找不到",
+    auth: "密钥有问题", quota: "额度用完了", network: "连不上服务",
+    rejected: "请求被拒绝", too_long: "太长了", empty: "返回了空结果",
+    unavailable: "功能未配置", not_found: "找不到", unknown: "服务返回了意外的结果",
   }[kind] ?? "出错了";
 }
 </script>

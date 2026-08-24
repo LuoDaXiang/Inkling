@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { AzureTtsProvider } from "@/providers/tts/azure";
+import { AzureScoringProvider } from "@/providers/scoring/azure";
 import { FileAudioStore } from "@/storage/file-audio-store";
 import { createApp } from "./server";
 
@@ -57,10 +58,13 @@ const provider = new AzureTtsProvider({
   outputFormat: "riff-16khz-16bit-mono-pcm",
 });
 
+const scoring = new AzureScoringProvider({ key: KEY, region: REGION });
+
 const store = new FileAudioStore(join(root, "data", "audio"));
 
 const app = createApp({
   provider,
+  scoring,
   store,
   publicDir: join(root, "public"),
   defaultVoice: VOICE,
