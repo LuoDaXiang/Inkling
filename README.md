@@ -2,7 +2,7 @@
 
 一个给英语学习者用的跟读练习工具。
 
-> 状态：v0.1.5 —— 粘一句英文能出声。评分层四块做完两块，录音还没开始。
+> 状态：v0.1.5 —— 粘一句英文能出声。评分能力已齐（尚未接入界面），录音待做。
 
 ## 这是什么
 
@@ -11,7 +11,7 @@ Inkling 只做一条链路，把它做好：
 
 ```
 拿到文本  →  合成语音  →  跟读录音  →  发音评分
-   ⏸           ✅           ⏸            🔨
+   ⏸           ✅           🔨           ✅
 ```
 
 文本可以自己导入，也可以让 AI 生成地道的美式英语。
@@ -34,7 +34,7 @@ Inkling 只做一条链路，把它做好：
 
 ```bash
 npm install
-npm test              # 434 个离线用例，一秒多跑完，不联网
+npm test              # 546 个离线用例，一秒多跑完，不联网
 
 cp .env.example .env.local   # 填 AZURE_SPEECH_KEY 和 AZURE_SPEECH_REGION
 npm run test:live     # 23 个真实调用，会消耗免费额度
@@ -62,7 +62,7 @@ npm run validity -- --n 150 --min-age 16
 | --- | --- | --- |
 | `TtsProvider` | 文字转语音 | ✅ Azure REST |
 | `AudioStore` | 音频存哪里 | ✅ 内存 / 文件系统 |
-| `ScoringProvider` | 发音评分 | 🔨 解析与请求头已完成 |
+| `ScoringProvider` | 发音评分 | ✅ Azure REST（待接入界面） |
 | `LlmProvider` | 生成练习文本 | ⏸ |
 | `Account` | 我是谁，这次操作谁付钱 | ⏸ Stage 2 |
 
@@ -115,20 +115,23 @@ Stage 2 加账号时，`synthesize()` 必须一行不改。
 src/
   core/                 纯逻辑，不碰 IO
     text/               规范化、分句
-    tts/                缓存键、错误分类、编排
+    tts/                缓存键、编排
+    scoring/            评分编排：三种走向、带重试
     audio/              WAV 解析与构造、可评分性校验
+    http/               可注入的 fetch 契约、超时、Retry-After
+    errors.ts           外部服务的错误分类，三线索
   providers/            外部服务的具体实现
     tts/                Azure TTS（REST，零依赖）
-    scoring/            发音评分：响应解析、请求头构造
+    scoring/            发音评分：provider、响应解析、请求头构造
   storage/              音频存储：内存实现 + 文件实现
   http/                 本地服务：路由、静态文件
 public/                 前端页面
 scripts/                效度测量等一次性工具
-tests/                  434 个离线用例
+tests/                  546 个离线用例
   live/                 23 个真实调用，手动跑
 docs/
   roadmap.md            路线图、已知缺口、已核实与未核实
-  decisions.md          决策记录，26 条
+  decisions.md          决策记录，30 条
 ```
 
 ## 路线图
@@ -137,7 +140,7 @@ docs/
 
 - [ ] **Stage 0 — 单人可用**
       不需要账号，填自己的 API key，数据全在本地。
-      TTS 出声 ✅ → 评分 🔨 → 录音 ⏸ → 落库 ⏸ → AI 生成 ⏸
+      TTS 出声 ✅ → 评分 ✅ → 录音 🔨 → 落库 ⏸ → AI 生成 ⏸
 - [ ] **Stage 1 — 能装到别人电脑上**
       macOS 和 Windows 安装包、自动更新、崩溃上报。这一步加入本地 TTS 引擎，
       让别人不申请 Azure key 也能用。
