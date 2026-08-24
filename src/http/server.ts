@@ -4,7 +4,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import type { TtsProvider } from "@/providers/tts/types";
 import type { FileAudioStore } from "@/storage/file-audio-store";
 import { synthesize } from "@/core/tts/synthesize";
-import { TtsError, type TtsErrorKind } from "@/core/tts/errors";
+import { TtsError, type TtsErrorKind } from "@/core/errors";
 
 /**
  * 本地 HTTP 服务。三个路由，所以不引框架——见 docs/decisions.md 0013。

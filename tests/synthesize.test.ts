@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeEach } from "vitest";
 import { synthesize } from "@/core/tts/synthesize";
-import { TtsError } from "@/core/tts/errors";
+import { TtsError } from "@/core/errors";
 import { MemoryAudioStore } from "@/storage/audio-store";
 import { FakeTtsProvider } from "./helpers/fake-provider";
 

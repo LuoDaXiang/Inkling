@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { AzureTtsProvider, AZURE_WAV_FORMATS } from "@/providers/tts/azure";
 import type { AzureWavFormat } from "@/providers/tts/azure";
-import { TtsError } from "@/core/tts/errors";
+import { TtsError } from "@/core/errors";
 import { buildWav } from "@/core/audio/wav";
 import { synthesize } from "@/core/tts/synthesize";
 import { MemoryAudioStore } from "@/storage/audio-store";

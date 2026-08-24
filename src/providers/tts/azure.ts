@@ -1,6 +1,14 @@
 import type { TtsProvider, TtsRequest, TtsResult } from "./types";
-import { TtsError, classify } from "@/core/tts/errors";
+import { ServiceError, classify } from "@/core/errors";
 import { buildSsml } from "./ssml";
+import {
+  fetchWithTimeout,
+  requestIdOf,
+  DEFAULT_TIMEOUT_MS,
+  type FetchLike,
+} from "@/core/http/fetch-like";
+
+export type { FetchLike };
 
 /**
  * Azure 语音服务的 TTS 实现，走 REST 接口。
@@ -16,16 +24,6 @@ import { buildSsml } from "./ssml";
  *
  * 接口文档：https://learn.microsoft.com/azure/ai-services/speech-service/rest-text-to-speech
  */
-
-export type FetchLike = (
-  input: string,
-  init: { method: string; headers: Record<string, string>; body: string },
-) => Promise<{
-  ok: boolean;
-  status: number;
-  text(): Promise<string>;
-  arrayBuffer(): Promise<ArrayBuffer>;
-}>;
 
 /** 只列 RIFF（WAV）格式——我们的 parseWav 只认这个。 */
 export const AZURE_WAV_FORMATS = {
@@ -51,6 +49,13 @@ export interface AzureTtsConfig {
    */
   maxChars?: number;
   userAgent?: string;
+  /**
+   * 请求超时（毫秒）。
+   *
+   * 必须有。实测过服务端会在某些输入下**不返回响应头**，
+   * 没有显式超时的话一个坏输入能把请求链挂住。
+   */
+  timeoutMs?: number;
   /** 注入点：测试传假 fetch，生产用全局 fetch。 */
   fetch?: FetchLike;
 }
@@ -69,20 +74,21 @@ export class AzureTtsProvider implements TtsProvider {
   private readonly outputFormat: AzureWavFormat;
   private readonly sampleRate: number;
   private readonly userAgent: string;
+  private readonly timeoutMs: number;
   private readonly fetchImpl: FetchLike;
 
   constructor(config: AzureTtsConfig) {
     // 配置错误要在构造时就炸，而不是等到第一次合成才发现。
     if (!config.key?.trim()) {
-      throw new TtsError("auth", "Azure key 未配置");
+      throw new ServiceError("auth", "Azure key 未配置");
     }
     if (!config.region?.trim()) {
-      throw new TtsError("auth", "Azure region 未配置");
+      throw new ServiceError("auth", "Azure region 未配置");
     }
 
     const format = config.outputFormat ?? DEFAULT_FORMAT;
     if (!(format in AZURE_WAV_FORMATS)) {
-      throw new TtsError("rejected", `不支持的输出格式：${format}`);
+      throw new ServiceError("rejected", `不支持的输出格式：${format}`);
     }
 
     this.key = config.key.trim();
@@ -93,6 +99,7 @@ export class AzureTtsProvider implements TtsProvider {
     this.model = format;
     this.maxChars = config.maxChars ?? DEFAULT_MAX_CHARS;
     this.userAgent = config.userAgent ?? DEFAULT_USER_AGENT;
+    this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.fetchImpl = config.fetch ?? (globalThis.fetch as unknown as FetchLike);
   }
 
@@ -105,26 +112,36 @@ export class AzureTtsProvider implements TtsProvider {
 
     let response;
     try {
-      response = await this.fetchImpl(this.endpoint, {
-        method: "POST",
-        headers: {
-          "Ocp-Apim-Subscription-Key": this.key,
-          "Content-Type": "application/ssml+xml",
-          "X-Microsoft-OutputFormat": this.outputFormat,
-          "User-Agent": this.userAgent,
+      response = await fetchWithTimeout(
+        this.fetchImpl,
+        this.endpoint,
+        {
+          method: "POST",
+          headers: {
+            "Ocp-Apim-Subscription-Key": this.key,
+            "Content-Type": "application/ssml+xml",
+            "X-Microsoft-OutputFormat": this.outputFormat,
+            "User-Agent": this.userAgent,
+          },
+          body: ssml,
         },
-        body: ssml,
-      });
+        this.timeoutMs,
+      );
     } catch (err) {
-      // fetch 本身抛错 = 连不上，一律算网络问题（可重试）
-      throw new TtsError("network", `Azure 请求失败：${describe(err)}`, { cause: err });
+      // 超时已经被 fetchWithTimeout 包成 ServiceError，原样抛出。
+      if (err instanceof ServiceError) throw err;
+      // 其余 fetch 抛错 = 连不上，一律算网络问题（可重试）
+      throw new ServiceError("network", `Azure 请求失败：${describe(err)}`, { cause: err });
     }
 
     if (!response.ok) {
       const detail = await readErrorBody(response);
-      throw new TtsError(
+      // RequestId 是报障时唯一能给服务商的凭据，务必带上。
+      const id = requestIdOf(response);
+      throw new ServiceError(
         classify({ status: response.status, message: detail }),
-        `Azure 返回 ${response.status}${detail ? `：${detail}` : ""}`,
+        `Azure 返回 ${response.status}${detail ? `：${detail}` : ""}` +
+          (id ? `（RequestId ${id}）` : ""),
       );
     }
 
@@ -133,7 +150,7 @@ export class AzureTtsProvider implements TtsProvider {
 
     // 200 不代表结果可用。空响应体要当失败，否则会存下一个播不出声的文件。
     if (audio.byteLength === 0) {
-      throw new TtsError("empty", "Azure 返回 200 但响应体为空");
+      throw new ServiceError("empty", "Azure 返回 200 但响应体为空");
     }
 
     return { audio, format: "wav", sampleRate: this.sampleRate };

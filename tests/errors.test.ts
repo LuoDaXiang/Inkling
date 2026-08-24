@@ -1,6 +1,6 @@
 import { describe, test, expect } from "vitest";
-import { classify, toTtsError, TtsError } from "@/core/tts/errors";
-import type { TtsErrorKind } from "@/core/tts/errors";
+import { classify, toTtsError, TtsError } from "@/core/errors";
+import type { TtsErrorKind } from "@/core/errors";
 
 /**
  * 错误分类决定了程序的行为：重试、提示改配置、还是引导充值。

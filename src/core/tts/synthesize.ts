@@ -1,7 +1,7 @@
 import type { TtsProvider } from "@/providers/tts/types";
 import type { AudioStore, StoredAudio } from "@/storage/audio-store";
 import { cacheKey } from "./cache-key";
-import { TtsError, toTtsError } from "./errors";
+import { TtsError, toTtsError } from "@/core/errors";
 
 /**
  * TTS 编排层：查缓存 → 调 provider → 落盘。
