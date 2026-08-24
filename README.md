@@ -2,7 +2,7 @@
 
 一个给英语学习者用的跟读练习工具。
 
-> 状态：v0.1.5 —— 粘一句英文能出声。评分能力已齐（尚未接入界面），录音待做。
+> 状态：v0.2.0 —— **跟读闭环通了**。粘一句英文 → 合成范本 → 跟读录音 → 三项分数 + 逐词标记。
 
 ## 这是什么
 
@@ -11,7 +11,7 @@ Inkling 只做一条链路，把它做好：
 
 ```
 拿到文本  →  合成语音  →  跟读录音  →  发音评分
-   ⏸           ✅           🔨           ✅
+   ⏸           ✅           ✅           ✅
 ```
 
 文本可以自己导入，也可以让 AI 生成地道的美式英语。
@@ -34,7 +34,7 @@ Inkling 只做一条链路，把它做好：
 
 ```bash
 npm install
-npm test              # 546 个离线用例，一秒多跑完，不联网
+npm test              # 743 个离线用例，两秒内跑完，不联网
 
 cp .env.example .env.local   # 填 AZURE_SPEECH_KEY 和 AZURE_SPEECH_REGION
 npm run test:live     # 23 个真实调用，会消耗免费额度
@@ -62,7 +62,7 @@ npm run validity -- --n 150 --min-age 16
 | --- | --- | --- |
 | `TtsProvider` | 文字转语音 | ✅ Azure REST |
 | `AudioStore` | 音频存哪里 | ✅ 内存 / 文件系统 |
-| `ScoringProvider` | 发音评分 | ✅ Azure REST（待接入界面） |
+| `ScoringProvider` | 发音评分 | ✅ Azure REST |
 | `LlmProvider` | 生成练习文本 | ⏸ |
 | `Account` | 我是谁，这次操作谁付钱 | ⏸ Stage 2 |
 
@@ -109,6 +109,10 @@ Stage 2 加账号时，`synthesize()` 必须一行不改。
 5. **跨层约束要有整条链的断言** —— 请求体上限曾经是 64KB，而 30 秒音频是 960KB。
    两个模块各自自洽，拼起来是坏的，任何单层测试都抓不到。让数字自己对账。
 
+另外判据二收紧过一次：**不可达代码不写说明，直接消灭**。
+原本允许「说明为什么这条分支不该存在」，但不可达代码写不出测试，
+也就没有东西能保证它是对的——它会在重构时被改坏而没人发现。
+
 ## 目录
 
 ```
@@ -117,7 +121,8 @@ src/
     text/               规范化、分句
     tts/                缓存键、编排
     scoring/            评分编排：三种走向、带重试
-    audio/              WAV 解析与构造、可评分性校验
+    recording/          录音状态机（6 状态 × 7 事件全覆盖）
+    audio/              WAV 解析与编码、采样格式转换、静音修剪
     http/               可注入的 fetch 契约、超时、Retry-After
     errors.ts           外部服务的错误分类，三线索
   providers/            外部服务的具体实现
@@ -125,13 +130,13 @@ src/
     scoring/            发音评分：provider、响应解析、请求头构造
   storage/              音频存储：内存实现 + 文件实现
   http/                 本地服务：路由、静态文件
-public/                 前端页面
+public/                 前端页面 + 录音层（AudioWorklet，刻意做薄）
 scripts/                效度测量等一次性工具
-tests/                  546 个离线用例
+tests/                  743 个离线用例，18 个文件
   live/                 23 个真实调用，手动跑
 docs/
   roadmap.md            路线图、已知缺口、已核实与未核实
-  decisions.md          决策记录，30 条
+  decisions.md          决策记录，34 条
 ```
 
 ## 路线图
@@ -140,7 +145,7 @@ docs/
 
 - [ ] **Stage 0 — 单人可用**
       不需要账号，填自己的 API key，数据全在本地。
-      TTS 出声 ✅ → 评分 ✅ → 录音 🔨 → 落库 ⏸ → AI 生成 ⏸
+      TTS 出声 ✅ → 评分 ✅ → 录音 ✅ → 落库 ⏸ → AI 生成 ⏸
 - [ ] **Stage 1 — 能装到别人电脑上**
       macOS 和 Windows 安装包、自动更新、崩溃上报。这一步加入本地 TTS 引擎，
       让别人不申请 Azure key 也能用。
@@ -152,6 +157,10 @@ docs/
 ## 技术选型
 
 TypeScript / SQLite / Vitest，**运行时零依赖**（`dependencies: {}`）。
+
+**浏览器**：Stage 0 支持 Chrome 与 Safari。**不支持 Firefox**——它忽略
+`AudioContext` 的采样率约束且拒绝连接不同采样率的节点，而重采样会引入
+音质损失，可能影响评分。检测到 Firefox 会明确告知。见 `docs/decisions.md` 0031。
 
 **界面形态**：Stage 0 是本地 Web 应用——浏览器做前端，一个 `node:http` 服务跑在本机。
 Stage 1 用 Electron 把它包成桌面应用。Electron 的 renderer 本来就是浏览器，
