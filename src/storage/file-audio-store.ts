@@ -1,4 +1,5 @@
-import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { join, resolve } from "node:path";
 import type { AudioFormat } from "@/providers/tts/types";
 import type { AudioStore, StoredAudio } from "./audio-store";
@@ -17,6 +18,14 @@ import type { AudioStore, StoredAudio } from "./audio-store";
 const KEY_PATTERN = /^[0-9a-f]{64}$/;
 
 const FORMATS: ReadonlySet<string> = new Set<AudioFormat>(["wav", "mp3"]);
+
+/**
+ * 临时文件后缀。
+ *
+ * 必须是 KEY_PATTERN 认不出来的形状，这样半路夭折的临时文件
+ * 既不会被 get() 当成缓存命中，也不会被当成合法的键。
+ */
+const TEMP_SUFFIX = ".tmp";
 
 export class FileAudioStore implements AudioStore {
   private readonly dir: string;
@@ -41,12 +50,41 @@ export class FileAudioStore implements AudioStore {
     return null;
   }
 
+  /**
+   * 写入。**先写临时文件再 rename**，不能直接写目标路径。
+   *
+   * 直接 writeFile 有两条路会写出一个坏文件，而且是永久的坏：
+   *
+   *   1. 并发。缓存键是**请求哈希**不是内容哈希（见 cache-key.ts），
+   *      而 F4 目前没有 in-flight 去重——两个并发的相同请求会各调一次
+   *      provider，拿到两段不保证逐字节相同的音频，然后同时写同一个路径。
+   *      writeFile 是先截断再写，两个交错就是一段拼接出来的坏音频。
+   *   2. 中断。进程被杀或磁盘满，留下一个截断的文件。
+   *
+   * 两种情况下 get() 都会命中——它只 stat 不校验内容——而缓存没有淘汰
+   * （F8），所以这个坏文件永远不会被替换掉。用户看到的是某一句话的音频
+   * 永远是坏的，且没有任何界面能清掉它。
+   *
+   * 同目录内的 rename 在 POSIX 上是原子的：要么看到完整的旧文件，
+   * 要么看到完整的新文件，不存在中间态。临时文件带随机后缀，
+   * 所以并发的两个写者不会互相踩。
+   */
   async put(key: string, audio: Uint8Array, format: AudioFormat): Promise<StoredAudio> {
     assertKey(key);
     assertFormat(format);
     await this.ensureDir();
     const path = this.pathFor(key, format);
-    await writeFile(path, audio);
+    const temp = `${path}.${randomUUID()}${TEMP_SUFFIX}`;
+
+    try {
+      await writeFile(temp, audio);
+      await rename(temp, path);
+    } catch (err) {
+      // 失败就把临时文件收走，别在缓存目录里堆垃圾。
+      await unlink(temp).catch(() => undefined);
+      throw err;
+    }
+
     return { key, format, bytes: audio.byteLength, location: path };
   }
 

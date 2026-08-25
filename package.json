@@ -8,11 +8,11 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file-if-exists=.env.local --import tsx src/http/main.ts",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:live": "vitest run --config vitest.live.config.ts",
+    "test": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest run",
+    "test:watch": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest",
+    "test:live": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest run --config vitest.live.config.ts",
     "typecheck": "tsc --noEmit",
-    "test:coverage": "vitest run --coverage.enabled --coverage.include='src/**' --coverage.exclude='src/**/types.ts' --coverage.reporter=text",
+    "test:coverage": "NODE_OPTIONS=--disable-warning=ExperimentalWarning vitest run --coverage.enabled --coverage.include='src/**' --coverage.exclude='src/**/types.ts' --coverage.reporter=text",
     "validity": "node --env-file-if-exists=.env.local --import tsx scripts/assessment-validity.ts"
   },
   "devDependencies": {

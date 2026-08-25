@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import type { TtsProvider } from "@/providers/tts/types";
@@ -13,6 +14,14 @@ import { encodeWav } from "@/core/audio/encode-wav";
 import { InvalidWavError } from "@/core/audio/wav";
 import { InvalidReferenceError } from "@/providers/scoring/config";
 import { MalformedResponseError } from "@/providers/scoring/parse";
+import type { OperationInput, OperationLog } from "@/storage/operations";
+import { scoringCostMicros, ttsCostMicros, type Rates } from "@/core/cost";
+import {
+  buildConfig,
+  MAX_JSON_BYTES,
+  MAX_PCM_BYTES,
+  RECORDING_SAMPLE_RATE,
+} from "./contract";
 
 /**
  * 本地 HTTP 服务。三个路由，所以不引框架——见 docs/decisions.md 0013。
@@ -30,40 +39,33 @@ export interface ServerDeps {
   publicDir: string;
   /** 未指定音色时用它。 */
   defaultVoice: string;
+  /**
+   * 操作流水。**可选**——没接的时候整条链路照常工作，只是不留记录。
+   *
+   * 做成可选不是偷懒：流水是可观测性设施，路由不该因为它缺席就走不通。
+   * 这个类型签名本身就是那条契约的第一道保证——`deps.log?.append()`
+   * 在没有 log 时是空操作，在有 log 时也永不抛（见 operations.ts）。
+   */
+  log?: OperationLog;
+  /**
+   * 计费费率。**可选**——没配置就不记花费，而不是记 0。
+   *
+   * 这两件事必须分得开：`null` 是「没配费率，不知道」，`0` 是「确实免费」。
+   * 把没配置记成 0，成本报表会看起来一切正常，直到收到账单。
+   */
+  rates?: Rates;
 }
 
 /**
- * 请求体上限。框架会替你做这件事，手写就得自己做。
- *
- * 按路由分开，因为两类请求的量级差三个数量级：
- *
- *   JSON  一段待合成的文本，几 KB 顶天
- *   音频  16kHz 单声道 16bit = 32,000 字节/秒，30 秒就是 960KB
- *
- * 之前只有一个 64KB 的常量，当时脑子里想的是 JSON。等 M03 上传录音时，
- * **任何超过 2 秒的录音都会被自己的服务器拒掉**——而错误信息会说
- * 「请求体过大」，看不出真正的原因。趁还没写录音路由先分开。
+ * 共享常量已经搬到 `contract.ts`——它是唯一来源，`GET /api/config` 从那里取值。
+ * 这里原样再导出，让现有路由测试的 import 一行不改，也避开循环 import。
+ * 搬家的理由与取值规则见 `docs/api-contract.md` §4「这些值从哪里来」。
  */
-const MAX_JSON_BYTES = 64 * 1024;
-
-/** 30 秒 16kHz 单声道音频约 960KB，留一点余量。 */
-export const MAX_AUDIO_BYTES = 1024 * 1024;
-
-/**
- * 录音上传的上限。
- *
- * 浏览器发的是**原始 Float32 采样**，不是编码好的 WAV——因为转换、
- * 修剪、编码这三步都在服务端做，那里有 171 个用例覆盖。浏览器层
- * 因此可以做到零业务逻辑，而它恰恰是唯一测不了的一层。
- *
- * 代价是上传体积翻倍：Float32 每采样 4 字节，30 秒 16kHz 是
- * 30 × 16000 × 4 = 1,920,000 字节。所以这个上限必须比 MAX_AUDIO_BYTES
- * 大一倍多。两个数字的关系有对账测试守着。
- */
-export const MAX_PCM_BYTES = 2 * 1024 * 1024;
-
-/** 录音的采样率。浏览器端和服务端必须一致，否则时长会算错。 */
-export const RECORDING_SAMPLE_RATE = 16000;
+export {
+  MAX_AUDIO_BYTES,
+  MAX_PCM_BYTES,
+  RECORDING_SAMPLE_RATE,
+} from "./contract";
 
 const MIME: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
@@ -90,6 +92,26 @@ const STATUS: Record<ServiceErrorKind, number> = {
   unknown: 500,
 };
 
+/**
+ * 一次请求的流水上下文。
+ *
+ * traceId 把 request / error / retry / result 串成一条链，
+ * 排查「那次卡住了」时靠它把整个过程捞出来。
+ */
+function beginTrace(deps: ServerDeps): {
+  emit(input: Omit<OperationInput, "traceId">): void;
+  elapsed(): number;
+} {
+  const traceId = randomUUID();
+  const started = Date.now();
+  return {
+    emit(input) {
+      deps.log?.append({ traceId, ...input });
+    },
+    elapsed: () => Date.now() - started,
+  };
+}
+
 export function createApp(deps: ServerDeps) {
   return createServer((req, res) => {
     handle(req, res, deps).catch((err: unknown) => {
@@ -106,6 +128,10 @@ async function handle(
 ): Promise<void> {
   const url = new URL(req.url ?? "/", "http://localhost");
   const path = url.pathname;
+
+  if (req.method === "GET" && path === "/api/config") {
+    return getConfig(res, deps);
+  }
 
   if (req.method === "POST" && path === "/api/tts") {
     return postTts(req, res, deps);
@@ -124,6 +150,21 @@ async function handle(
   }
 
   sendJson(res, 405, { error: "method_not_allowed", message: `不支持 ${req.method}` });
+}
+
+/**
+ * GET /api/config —— 契约 §4。
+ *
+ * 下发共享常量与契约版本，消灭「客户端和服务端各硬编码一份」这一整类问题。
+ * 无错误分支、无副作用、不花钱、幂等。
+ *
+ * `no-store` 是 [C6]：这份 config 的全部目的就是消灭两边不一致，
+ * 让它自己被缓存住是自相矛盾——客户端会拿着上一版的常量跑。
+ */
+function getConfig(res: ServerResponse, deps: ServerDeps): void {
+  sendJson(res, 200, buildConfig({ scoringAvailable: Boolean(deps.scoring) }), {
+    "Cache-Control": "no-store",
+  });
 }
 
 /** POST /api/tts  { text, voice?, speed? } → { key, format, bytes, cached, url } */
@@ -158,15 +199,38 @@ async function postTts(
     return sendJson(res, 400, { error: "rejected", message: "speed 必须是数字" });
   }
 
+  const trace = beginTrace(deps);
+  const voice = input.voice ?? deps.defaultVoice;
+  trace.emit({
+    kind: "request",
+    service: "tts",
+    provider: deps.provider.engine,
+    meta: { textLength: input.text.length, voice },
+  });
+
   try {
     const result = await synthesize(
       {
         text: input.text,
-        voice: input.voice ?? deps.defaultVoice,
+        voice,
         ...(input.speed === undefined ? {} : { speed: input.speed }),
       },
       { provider: deps.provider, store: deps.store },
     );
+
+    trace.emit({
+      kind: "result",
+      service: "tts",
+      provider: deps.provider.engine,
+      status: 200,
+      latencyMs: trace.elapsed(),
+      // 命中缓存就没调外部服务，花费为零——这是缓存存在的全部理由，
+      // 必须能在流水里看出来。没配费率时不记，而不是记 0。
+      ...(deps.rates && !result.cached
+        ? { costMicros: ttsCostMicros(input.text.length, deps.rates) }
+        : {}),
+      meta: { cached: result.cached, format: result.format, audioBytes: result.bytes },
+    });
 
     sendJson(res, 200, {
       key: result.key,
@@ -177,11 +241,29 @@ async function postTts(
     });
   } catch (err) {
     if (err instanceof ServiceError) {
+      // 失败不计费：401 / 429 / 网络断都没有产生可计费用量。
+      trace.emit({
+        kind: "error",
+        service: "tts",
+        provider: deps.provider.engine,
+        status: STATUS[err.kind],
+        latencyMs: trace.elapsed(),
+        errorKind: err.kind,
+        meta: { reason: err.message },
+      });
       // 服务端日志留全文，返回给前端的也是同一句话——Stage 0 只有自己在用，
       // 没必要藏。等有了别的用户再决定哪些细节不该外泄。
       console.error(`[tts] ${err.kind}: ${err.message}`);
       return sendJson(res, STATUS[err.kind], { error: err.kind, message: err.message });
     }
+    trace.emit({
+      kind: "error",
+      service: "tts",
+      provider: deps.provider.engine,
+      latencyMs: trace.elapsed(),
+      errorKind: "unknown",
+      meta: { reason: describe(err) },
+    });
     throw err;
   }
 }
@@ -227,6 +309,17 @@ async function postAssess(
   }
 
   const floats = new Float32Array(raw.buffer, raw.byteOffset, raw.byteLength / 4);
+  const trace = beginTrace(deps);
+  trace.emit({
+    kind: "request",
+    service: "scoring",
+    provider: deps.scoring.engine,
+    meta: {
+      audioBytes: raw.byteLength,
+      durationMs: Math.round((floats.length / RECORDING_SAMPLE_RATE) * 1000),
+      textLength: reference.length,
+    },
+  });
 
   try {
     // 三步全是纯函数，全部有用例覆盖：
@@ -237,15 +330,54 @@ async function postAssess(
     // 修剪后可能什么都不剩——整段都是静音。这不是错误，
     // 是要如实告诉用户的结果，走和「没识别到语音」同一条路。
     if (trimmed.samples.length === 0) {
+      // 整段静音，根本没调外部服务。记成 result 而不是 error——
+      // 用户确实录了一段没有语音的东西，这是结果不是故障。
+      // 分错了会让「失败率」这个指标失真。
+      // 修剪后什么都不剩，**根本没调外部服务**——所以不计费。
+      trace.emit({
+        kind: "result",
+        service: "scoring",
+        provider: deps.scoring.engine,
+        status: 200,
+        latencyMs: trace.elapsed(),
+        meta: { reason: "no_speech_after_trim" },
+      });
       return sendJson(res, 200, { outcome: "no_speech", trimmed: { start: trimmed.trimmedStart } });
     }
 
+    // 计费按**实际送给服务的**音频时长，不是用户按住录音键的时长——
+    // 首尾静音被掐掉了，那部分没有送出去，不该计费。
+    const assessedMs = Math.round((trimmed.samples.length / RECORDING_SAMPLE_RATE) * 1000);
     const wav = encodeWav(trimmed.samples, { sampleRate: RECORDING_SAMPLE_RATE });
     const outcome = await assess({ audio: wav, reference }, { provider: deps.scoring });
 
     if (outcome.kind === "no_speech") {
+      // 这一条相反：音频确实送出去了，服务只是没识别到语音。调了就要计费。
+      trace.emit({
+        kind: "result",
+        service: "scoring",
+        provider: deps.scoring.engine,
+        status: 200,
+        latencyMs: trace.elapsed(),
+        ...(deps.rates ? { costMicros: scoringCostMicros(assessedMs, deps.rates) } : {}),
+        meta: { reason: "no_speech" },
+      });
       return sendJson(res, 200, { outcome: "no_speech" });
     }
+
+    trace.emit({
+      kind: "result",
+      service: "scoring",
+      provider: deps.scoring.engine,
+      status: 200,
+      latencyMs: trace.elapsed(),
+      ...(deps.rates ? { costMicros: scoringCostMicros(assessedMs, deps.rates) } : {}),
+      meta: {
+        reason: outcome.kind,
+        durationMs: assessedMs,
+        audioBytes: wav.byteLength,
+      },
+    });
 
     sendJson(res, 200, {
       outcome: outcome.kind,
@@ -260,18 +392,35 @@ async function postAssess(
     // 三类错误分开报，因为用户能做的事不同：
     // 音频有问题 → 重录；参考文本有问题 → 是我们的 bug；
     // 响应结构坏掉 → 服务端变了，重录也没用。
+    const engine = deps.scoring.engine;
     if (err instanceof InvalidWavError || err instanceof InvalidReferenceError) {
+      trace.emit({
+        kind: "error", service: "scoring", provider: engine, status: 400,
+        latencyMs: trace.elapsed(), errorKind: "rejected", meta: { reason: err.message },
+      });
       console.error(`[assess] rejected: ${err.message}`);
       return sendJson(res, 400, { error: "rejected", message: err.message });
     }
     if (err instanceof MalformedResponseError) {
+      trace.emit({
+        kind: "error", service: "scoring", provider: engine, status: 502,
+        latencyMs: trace.elapsed(), errorKind: "unknown", meta: { reason: err.message },
+      });
       console.error(`[assess] malformed: ${err.message}`);
       return sendJson(res, 502, { error: "unknown", message: "评分服务返回了无法解析的结果" });
     }
     if (err instanceof ServiceError) {
+      trace.emit({
+        kind: "error", service: "scoring", provider: engine, status: STATUS[err.kind],
+        latencyMs: trace.elapsed(), errorKind: err.kind, meta: { reason: err.message },
+      });
       console.error(`[assess] ${err.kind}: ${err.message}`);
       return sendJson(res, STATUS[err.kind], { error: err.kind, message: err.message });
     }
+    trace.emit({
+      kind: "error", service: "scoring", provider: engine,
+      latencyMs: trace.elapsed(), errorKind: "unknown", meta: { reason: describe(err) },
+    });
     throw err;
   }
 }
@@ -367,12 +516,22 @@ function collect(req: IncomingMessage, limit: number): Promise<Buffer> {
   });
 }
 
-function sendJson(res: ServerResponse, status: number, payload: unknown): void {
+/**
+ * `headers` 是后加的可选参数，默认不传、行为与之前完全一致。
+ * 目前唯一的用途是给 `/api/config` 发 `Cache-Control: no-store`（[C6]）。
+ */
+function sendJson(
+  res: ServerResponse,
+  status: number,
+  payload: unknown,
+  headers: Record<string, string> = {},
+): void {
   if (res.headersSent) return;
   const body = JSON.stringify(payload);
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Length": String(Buffer.byteLength(body)),
+    ...headers,
   });
   res.end(body);
 }

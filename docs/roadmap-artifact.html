@@ -1,0 +1,392 @@
+<title>Inkling 工程路线图</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+:root{
+  --ground:#F1F3F4; --surface:#FFFFFF; --surface-2:#E9EDEE;
+  --ink:#191F24; --ink-soft:#5A666E; --ink-faint:#8B979E;
+  --accent:#0E6F78; --accent-soft:#D9EAEB;
+  --warn:#A15612; --warn-soft:#F2E3D2;
+  --bad:#9C2F2F; --bad-soft:#F3DEDE;
+  --good:#2F6B45; --good-soft:#DDEDE2;
+  --line:#D4DBDD; --line-strong:#B8C3C6;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --ground:#0F1316; --surface:#171C20; --surface-2:#1E252A;
+    --ink:#E5EAEC; --ink-soft:#94A1A9; --ink-faint:#6C7A82;
+    --accent:#4EC3CD; --accent-soft:#123336;
+    --warn:#DF9942; --warn-soft:#33260F;
+    --bad:#E8807F; --bad-soft:#361A1A;
+    --good:#6FC08D; --good-soft:#14291D;
+    --line:#252D32; --line-strong:#38434A;
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0F1316; --surface:#171C20; --surface-2:#1E252A;
+  --ink:#E5EAEC; --ink-soft:#94A1A9; --ink-faint:#6C7A82;
+  --accent:#4EC3CD; --accent-soft:#123336;
+  --warn:#DF9942; --warn-soft:#33260F;
+  --bad:#E8807F; --bad-soft:#361A1A;
+  --good:#6FC08D; --good-soft:#14291D;
+  --line:#252D32; --line-strong:#38434A;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:"Public Sans","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:16.5px;line-height:1.72;-webkit-font-smoothing:antialiased;margin:0;padding:0 20px 120px}
+.wrap{max-width:880px;margin:0 auto}
+.masthead{padding:68px 0 32px;border-bottom:2px solid var(--ink);display:flex;flex-direction:column;gap:18px}
+.kicker{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);display:flex;flex-wrap:wrap;gap:14px}
+.kicker span::before{content:"· ";color:var(--ink-faint)}
+.kicker span:first-child::before{content:none}
+h1{font-family:"Familjen Grotesk","PingFang SC",sans-serif;font-weight:700;font-size:clamp(2rem,5.4vw,3rem);line-height:1.08;letter-spacing:-.022em;margin:0;text-wrap:balance}
+.standfirst{font-size:1.06rem;color:var(--ink-soft);max-width:66ch;margin:0}
+
+.pipe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:22px 0 0}
+.pipe b{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:12.5px;background:var(--surface);border:1px solid var(--line-strong);border-radius:2px;padding:6px 11px}
+.pipe i{color:var(--ink-faint);font-style:normal;font-size:13px}
+.pipe b.done{border-color:var(--good);color:var(--good);background:var(--good-soft)}
+.pipe b.now{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+
+section{padding-top:58px;display:flex;flex-direction:column;gap:18px}
+h2{font-family:"Familjen Grotesk","PingFang SC",sans-serif;font-weight:600;font-size:1.58rem;letter-spacing:-.014em;line-height:1.2;margin:0;padding-bottom:10px;border-bottom:1px solid var(--line);display:flex;align-items:baseline;gap:12px;text-wrap:balance}
+h2 em{font-family:"IBM Plex Mono",monospace;font-style:normal;font-size:12px;font-weight:400;color:var(--ink-faint);letter-spacing:.08em}
+h3{font-family:"Familjen Grotesk","PingFang SC",sans-serif;font-weight:600;font-size:1.04rem;margin:0;letter-spacing:-.005em}
+p{margin:0;max-width:72ch}
+a{color:var(--accent);text-underline-offset:3px}
+a:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86em;background:var(--surface-2);padding:1px 5px;border-radius:3px}
+strong{font-weight:600}
+
+.verdict{background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:3px;padding:20px 22px;display:flex;flex-direction:column;gap:11px}
+.verdict p{max-width:68ch}
+
+.track{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:3px;background:var(--surface);overflow:hidden}
+.ms{display:grid;grid-template-columns:52px 1fr auto;border-bottom:1px solid var(--line);align-items:center}
+.ms:last-child{border-bottom:none}
+.ms .id{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-faint);padding:13px 0 13px 16px;letter-spacing:.04em}
+.ms .name{padding:13px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.ms .name b{font-weight:600;font-size:14.8px}
+.ms .name small{font-size:13px;color:var(--ink-soft);line-height:1.5}
+.ms .st{padding:13px 16px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.ms.done{background:var(--good-soft)}
+.ms.done .id,.ms.done .st{color:var(--good)}
+.ms.now{background:var(--accent-soft)}
+.ms.now .id,.ms.now .st{color:var(--accent);font-weight:500}
+.ms.now .name b{color:var(--accent)}
+.ms.wait .st{color:var(--ink-faint)}
+
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:600px;font-size:14.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.55}
+thead th{font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-soft);background:var(--surface-2);white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+td.num{font-variant-numeric:tabular-nums;font-family:"IBM Plex Mono",monospace;font-size:13px;white-space:nowrap}
+td.hi{font-weight:600;color:var(--accent)}
+tr.hero td{background:var(--accent-soft)}
+tr.hero td:first-child{font-weight:600;color:var(--accent)}
+.dim{color:var(--ink-soft)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.dot.r{background:var(--bad)} .dot.y{background:var(--warn)} .dot.g{background:var(--good)}
+
+.finding{border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:3px;background:var(--surface);padding:14px 17px;display:flex;flex-direction:column;gap:7px}
+.finding + .finding{margin-top:11px}
+.finding.sev{border-left-color:var(--bad)}
+.finding.ok{border-left-color:var(--good)}
+.finding .fh{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.finding .fh b{font-weight:600;font-size:14.8px}
+.chip{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:2px;background:var(--warn-soft);color:var(--warn);white-space:nowrap}
+.chip.hi{background:var(--bad-soft);color:var(--bad)}
+.chip.g{background:var(--good-soft);color:var(--good)}
+.finding p{font-size:14.3px;line-height:1.62}
+
+pre{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:15px 17px;overflow-x:auto;font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:13px;line-height:1.7;color:var(--ink)}
+pre .c{color:var(--ink-faint)}
+.note{font-size:13.6px;color:var(--ink-soft);line-height:1.65;border-top:1px solid var(--line);padding-top:13px;max-width:74ch}
+.note b{color:var(--ink)}
+ul{margin:0;padding-left:1.15em;display:flex;flex-direction:column;gap:5px;max-width:72ch}
+li::marker{color:var(--ink-faint)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:14px 16px;display:flex;flex-direction:column;gap:3px}
+.stat b{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat small{font-size:12px;color:var(--ink-soft)}
+.stat .delta{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--good)}
+
+/* 三维度分工图 */
+.dims{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:3px;background:var(--surface);overflow:hidden}
+.dim-row{display:grid;grid-template-columns:104px 1fr;border-bottom:1px solid var(--line)}
+.dim-row:last-child{border-bottom:none}
+.dim-row.primary{background:var(--accent-soft)}
+.dim-row > .label{padding:14px 16px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.dim-row > .label b{font-weight:600;font-size:15px}
+.dim-row.primary > .label b{color:var(--accent)}
+.dim-row > .label small{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint)}
+.dim-row.primary > .label small{color:var(--accent)}
+.dim-row > .how{padding:14px 18px;font-size:14.3px;line-height:1.6;color:var(--ink-soft)}
+.dim-row > .how b{color:var(--ink);font-weight:600}
+.dim-row.muted > .label b{color:var(--ink-faint)}
+.dim-row.muted > .how{color:var(--ink-faint)}
+
+@media (max-width:560px){
+  body{font-size:15.8px}
+  .ms{grid-template-columns:44px 1fr;grid-template-rows:auto auto}
+  .ms .st{grid-column:2;padding-top:0;padding-bottom:12px}
+  .ms .name{padding-bottom:4px}
+  .dim-row{grid-template-columns:1fr}
+  .dim-row > .label{border-right:none;border-bottom:1px solid var(--line)}
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="kicker">
+    <span>Inkling</span><span>v0.2.0</span><span>Stage 0</span><span>946 离线 + 23 live</span><span>零运行时依赖</span>
+  </div>
+  <h1>跟读闭环通了</h1>
+  <p class="standfirst">粘一句英文 → 合成范本 → 跟读录音 → 掐掉首尾静音 → 准确度为主的三项分数 + 逐词标记。这是项目第一次有完整的产品价值。</p>
+  <div class="pipe">
+    <b>拿到文本 ⏸</b><i>→</i><b class="done">合成语音 ✅</b><i>→</i><b class="done">跟读录音 ✅</b><i>→</i><b class="done">发音评分 ✅</b>
+  </div>
+</header>
+
+<section>
+  <h2>产品定位已更正 <em>ACCURACY FIRST</em></h2>
+  <div class="verdict">
+    <p><strong>准确度是主打。说话首先要说准。</strong>音念错了，再流利、语调再自然也是错的；音念准了，流利和语调才是在这之上的加分项。</p>
+    <p>此前这份路线图写的是「语调可以做主打」，理由是它的相关系数最高、校准偏差最小。<strong>那个理由混淆了两件事</strong>——「测得准不准」是评分服务的属性，「值不值得当主打」是产品判断。语调的测量质量最好这个事实不变，但<strong>测得最准的维度不等于最该突出的维度</strong>。一个能精确告诉你「语调略平」却不告诉你「这三个音念错了」的产品，把用户的注意力引到了次要的地方。</p>
+  </div>
+
+  <div class="dims">
+    <div class="dim-row primary">
+      <div class="label"><b>准确度</b><small>Primary</small></div>
+      <div class="how">排第一并<b>高亮</b>。逐词<b>标红</b>念错的音，悬停显示音素级明细——「第 3 个词的 /θ/ 念成了 /s/」才是能拿去改的东西，一个总分做不到。</div>
+    </div>
+    <div class="dim-row">
+      <div class="label"><b>流利度</b><small>Supporting</small></div>
+      <div class="how">第二位，只展示分档。</div>
+    </div>
+    <div class="dim-row">
+      <div class="label"><b>语调</b><small>Supporting</small></div>
+      <div class="how">第三位。逐词<b>标黄</b>读得平的词，但<b>被标红盖过</b>——一个词两样都占时先报念错。把音念对是基础。</div>
+    </div>
+    <div class="dim-row muted">
+      <div class="label"><b>完整度</b><small>Hidden</small></div>
+      <div class="how">不展示。朗读场景专家全给满分，没有区分度，而服务端平均只给 86.7，展示它只会制造无意义的焦虑。存库但不进界面。</div>
+    </div>
+  </div>
+
+  <div class="finding sev">
+    <div class="fh"><b>这个改动让「不展示原始百分数」更要紧，不是更宽松</b><span class="chip hi">关键</span></div>
+    <p>准确度的<strong>排序</strong>可信（斯皮尔曼 0.776，强相关，足以支撑趋势曲线），但<strong>绝对值虚高约 20 分</strong>——专家均分 65.8，服务端给 85.7。</p>
+    <p><strong>主打维度报一个虚高的数字，整个产品的可信度就没了</strong>——用户以为自己念得很准，实际不是。所以「只展示分档不展示原始百分数」这条规则因为这次改动而更加必须遵守，分档切点仍用效度测量的数据反推。</p>
+  </div>
+
+  <div class="finding ok">
+    <div class="fh"><b>语调仍然保留，理由变了</b><span class="chip g">差异化</span></div>
+    <p>不再是「主打」，而是两条：<strong>它是竞品缺口</strong>——参考实现 Enjoy 从没调用 <code>enableProsodyAssessment</code>，它数据库里的 <code>prosodyScore</code> 那一列永远是空的；<strong>它测得最准</strong>，适合放在趋势曲线上看长期变化——准确度改善要几周，语调的变化几天就看得出。</p>
+  </div>
+</section>
+
+<section>
+  <h2>当前进度 <em>WHERE WE ARE</em></h2>
+  <div class="track">
+    <div class="ms done"><span class="id">M00</span><span class="name"><b>TTS 引擎层</b><small>规范化、分句、SSML 防注入、内容寻址缓存、错误三线索分类、WAV 校验</small></span><span class="st">已完成</span></div>
+    <div class="ms done"><span class="id">M01</span><span class="name"><b>能打开的东西</b><small><code>node:http</code> 三路由、合成页面、文件存储、CI　·　<code>v0.1.0</code></small></span><span class="st">已完成</span></div>
+    <div class="ms done"><span class="id">M02</span><span class="name"><b>评分效度测量</b><small>137 条真人样本对 5 位语言专家的共识，量化相关性</small></span><span class="st">已完成</span></div>
+    <div class="ms done"><span class="id">M04</span><span class="name"><b>评分服务层</b><small>解析、请求头、provider、编排四块，覆盖率全 100%</small></span><span class="st">已完成</span></div>
+    <div class="ms done"><span class="id">M03</span><span class="name"><b>浏览器录音</b><small>四个纯函数模块 + 状态机，171 个用例　·　<code>v0.2.0</code> 闭环通了</small></span><span class="st">已完成</span></div>
+    <div class="ms now"><span class="id">M05</span><span class="name"><b>SQLite 与操作流水</b><small>流水已上线、能记花费、能按侧统计；客户端契约成文，落地 <strong>1/6</strong> 步</small></span><span class="st">进行中</span></div>
+    <div class="ms wait"><span class="id">M06</span><span class="name"><b>AI 生成与导入</b><small>按体裁生成，外加自己粘贴</small></span><span class="st">待做</span></div>
+    <div class="ms wait"><span class="id">M07</span><span class="name"><b>还测试债</b><small>并发去重、变异测试、property-based、缓存上界</small></span><span class="st">待做</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b>946</b><small>离线用例</small><span class="delta">+625 自 v0.1.0</span></div>
+    <div class="stat"><b>29</b><small>测试文件</small><span class="delta">+20</span></div>
+    <div class="stat"><b>100%</b><small>八个新文件覆盖率</small><span class="delta">评分层 + 录音层</span></div>
+    <div class="stat"><b>42</b><small>决策记录</small><span class="delta">+28</span></div>
+    <div class="stat"><b>0</b><small>运行时依赖</small><span class="delta">保持</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>M02 的测量结果 <em>VALIDITY</em></h2>
+  <p>用 <code>speechocean762</code> 公开基准——每条由 <strong>5 位语言专家独立打分</strong>取平均作真值，说话人是母语为普通话的英语学习者，<strong>和目标用户同一人群</strong>。137 条成人样本，分层覆盖专家总分 3–10 全段。</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>维度</th><th>斯皮尔曼</th><th>专家均分</th><th>服务端均分</th><th>偏差</th><th>产品角色</th></tr></thead>
+    <tbody>
+      <tr class="hero"><td>准确度</td><td class="num">0.776</td><td class="num">65.8</td><td class="num">85.7</td><td class="num">+19.9</td><td>主打</td></tr>
+      <tr><td>流利度</td><td class="num">0.808</td><td class="num">69.9</td><td class="num">86.7</td><td class="num">+16.8</td><td class="dim">辅助</td></tr>
+      <tr><td>语调</td><td class="num hi">0.908</td><td class="num">66.1</td><td class="num">66.6</td><td class="num hi">+0.5</td><td class="dim">辅助 · 差异化</td></tr>
+      <tr><td class="dim">完整度</td><td class="num dim">—</td><td class="num">100.0</td><td class="num">86.7</td><td class="num dim">—</td><td class="dim">不展示</td></tr>
+      <tr><td>总分</td><td class="num">0.869</td><td class="num">61.2</td><td class="num">78.3</td><td class="num">+17.1</td><td class="dim">不单独展示</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p><strong>四个维度的相关系数都在 0.776 以上，足以支撑趋势曲线和「这次比上次好吗」。</strong>但绝对值普遍虚高——所以界面上只展示分档，切点用这张表的数据反推，不是拍脑袋定的。</p>
+  <p class="note"><b>踩过的坑：</b>第一次按顺序取前 20 条，相关系数<b>全部低于 0.3</b>，看着就是「服务不准，该换供应商」。查下来是取值范围压扁——那 20 条的专家分只有四个取值，完整度更是全部满分、方差为零。改成按分数分层抽样后结论完全反转。<b>低相关先怀疑样本，再怀疑被测对象。</b></p>
+</section>
+
+<section>
+  <h2>v0.2.0 修掉的三个 bug <em>ALL CAUGHT BY TESTS</em></h2>
+
+  <div class="finding sev">
+    <div class="fh"><b>静音修剪用均方根会被单次爆音击败</b><span class="chip hi">测试抓的</span></div>
+    <p>一个 30000 的爆音落在 160 采样的窗口里，RMS 被拉到阈值的 <strong>23 倍</strong>——平方放大离群值，单次咔哒声足以让整段静音一点都掐不掉。改成按「窗口内超过阈值的采样占比」判断：爆音占 0.6%，语音占 99%。</p>
+    <p>上一轮列边缘情况清单时写的是「用窗口不用单点」——<strong>方向对，但没意识到窗口内用什么统计量同样关键</strong>。</p>
+  </div>
+
+  <div class="finding sev">
+    <div class="fh"><b>请求体超限时掐断连接</b><span class="chip hi">从 v0.1.0 就在</span></div>
+    <p><code>destroy()</code> 会在响应发出之前掐断连接，客户端拿到的是 <code>fetch failed</code> 而不是 413——<strong>完全不知道是自己传太大了</strong>。这个 bug 在 JSON 那条路上一直存在，从来没被测到，因为没人真的用超大请求体打过它。</p>
+  </div>
+
+  <div class="finding">
+    <div class="fh"><b>测试用例互相干扰</b><span class="chip">测试自身</span></div>
+    <p>每个用例重启服务器来换 provider，单独跑通过、连起来跑就挂——<code>server.close()</code> 要等 keep-alive 连接释放。改成一次性起两台服务器 + 可替换的代理。</p>
+  </div>
+</section>
+
+<section>
+  <h2>参考实现三处照抄不得 <em>WHAT NOT TO COPY</em></h2>
+  <p>录音这一段抄了参考实现三条（16kHz/16bit 配置、掐首尾静音、到点自动停），但它的<strong>参数</strong>照抄不得。</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>它的做法</th><th>问题</th></tr></thead>
+    <tbody>
+      <tr><td>结尾阈值 <strong>-100 dBFS</strong></td><td>换算成 16 位整数是 <strong>0.33 个量化单位</strong>——低于 1，意味着「恰好为 0」。任何底噪都掐不动，那一半等于白做</td></tr>
+      <tr><td>切在阈值交越点</td><td>p / t / k 的起音是陡峭瞬态，切在交越点会削掉前沿，听感变闷、<strong>准确度分数下降</strong>。我们往前退 50ms</td></tr>
+      <tr><td>直接算绝对值</td><td>有些麦克风的静音段绝对值恒定不为零，不去均值的话修剪<strong>完全失效且不报错</strong></td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note"><b>它的录音功能零测试</b>——e2e 里连 <code>record</code> 这个词都没出现。原因是逻辑散在 provider、组件、主进程模型三处，每处都混着 IPC 和文件系统，<b>一个测试都写不了</b>。我们把不可测的部分压到最薄：浏览器层只负责「拿到采样」，转换、修剪、编码、状态迁移全在 <code>core/</code>，171 个用例覆盖。</p>
+</section>
+
+<section>
+  <h2>已知缺口 <em>GAPS</em></h2>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>编号</th><th>缺口</th><th>归入</th></tr></thead>
+    <tbody>
+      <tr><td class="num"><span class="dot r"></span>F4</td><td>无 in-flight 去重，并发相同请求付两次钱。<strong>曾经同时是数据损坏的触发器</strong>，F15 修好后才只剩重复付费</td><td class="num">M07</td></tr>
+      <tr><td class="num"><span class="dot r"></span>F5</td><td>无变异测试。覆盖率只说明代码被执行，不说明断言够狠</td><td class="num">M07</td></tr>
+      <tr><td class="num"><span class="dot r"></span>F7</td><td>16 个不变量只跑 8 个手选样本，该上 property-based</td><td class="num">M07</td></tr>
+      <tr><td class="num"><span class="dot r"></span>F8</td><td>缓存无上界，无淘汰</td><td class="num">M07</td></tr>
+      <tr><td class="num"><span class="dot r"></span>F3</td><td>分句不知道 30 秒这个约束，切出来的每一句必须是可评分单元</td><td class="num">M06</td></tr>
+      <tr><td class="num"><span class="dot r"></span>F12</td><td>四张业务表已建未接线，没有任何生产调用方</td><td class="num">M05</td></tr>
+      <tr><td class="num"><span class="dot y"></span>F16</td><td><code>main.ts</code> 没有自动化测试，只做过一次手动冒烟</td><td class="num">M05</td></tr>
+      <tr><td class="num"><span class="dot y"></span>F17</td><td><code>node:sqlite</code> 是实验性 API，行为随 Node 版本变（布尔绑定已实测到差异）</td><td class="num">持续</td></tr>
+      <tr><td class="num"><span class="dot y"></span>F18</td><td>客户端两处硬编码仍在原地。<code>GET /api/config</code> 已下发，客户端还没改成取它</td><td class="num">M05</td></tr>
+      <tr><td class="num"><span class="dot r"></span>F19</td><td><code>public/</code> 零测试基础设施，契约 §8 的九条客户端承诺全靠自觉</td><td class="num">未归属</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F13</td><td>流水不记花费，<code>cost_micros</code> 永远为空</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F14</td><td><code>summary()</code> 不区分 TTS 与评分，「练了几次」数不对</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F15</td><td>音频缓存非原子写入，并发或中断会<strong>永久</strong>写坏且被当成命中</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F1</td><td>评分实现</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F2</td><td>音频格式校验</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F6</td><td>假 fetch 的 headers / 超时模拟</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F9</td><td>CI</td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F10</td><td>错误分类搬到 <code>core/</code></td><td class="num">已完成</td></tr>
+      <tr><td class="num"><span class="dot g"></span>F11</td><td>fetch 显式超时</td><td class="num">已完成</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>测试完整性的五条判据 <em>THE STANDARD</em></h2>
+  <p>「测试写够了没有」需要一个可检查的标准。前三条是一开始定的，<strong>后两条是踩了坑之后补的</strong>。</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>判据</th><th>来自哪个教训</th></tr></thead>
+    <tbody>
+      <tr><td><strong>一、输入空间被划分完</strong><br><span class="dim">每类都有例子，且能说出为什么穷尽</span></td><td class="dim">也包括说明哪些类<em>不</em>属于这里</td></tr>
+      <tr><td><strong>二、每个分支都可达</strong><br><span class="dim">覆盖率核对</span></td><td class="dim">后来收紧为：<strong>不可达代码不写说明，直接消灭</strong>——它写不出测试，也就没有东西能保证它是对的</td></tr>
+      <tr><td><strong>三、每种失败都有归属</strong><br><span class="dim">不是「失败了」，是「哪一种失败」</span></td><td class="dim">每种的 <code>retryable</code> 都要断言。只断言 kind 的话，「auth 被重试到额度耗尽」测不出来</td></tr>
+      <tr><td><strong>四、测试数据不能和生产数据同源</strong></td><td><code>parseWav</code> 只认 44 字节固定头，ffmpeg 的文件一概拒收——<strong>321 个用例全绿</strong>，因为测试样本和生产音频出自同一个模子</td></tr>
+      <tr><td><strong>五、跨层约束要有整条链的断言</strong></td><td>请求体上限 64KB 而 30 秒音频 960KB。两个模块各自自洽，<strong>拼起来是坏的</strong>，任何单层测试都抓不到</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section>
+  <h2>M05 进行中 <em>IN FLIGHT</em></h2>
+  <p>SQLite 与操作流水。四张业务表 <code>material → sentence → recording → assessment</code>，<strong>外加一张 <code>operations</code> 流水表</strong>：每次 TTS 和评分记一行——时间、输入、耗时、花费、成败。</p>
+
+  <div class="verdict">
+    <p><b>流水那一半上线了，业务表那一半还是死代码。</b>两条路由都埋了 <code>request / result / error</code> 事件，<code>main.ts</code> 负责开库、迁移、优雅关闭。但四张业务表建好也测好之后，<strong>没有任何生产代码调用它们</strong>——练一整天，那四张表都是空的。</p>
+    <p class="note"><b>而这恰恰撞在 M05 自己的理由上：</b>流水开始留了，练习记录还没有。<b>过去的数据不会重新产生。</b></p>
+  </div>
+
+  <h3>已完成</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>部分</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td>连接层</td><td><code>STRICT</code> / WAL / <code>busy_timeout</code> / <code>foreign_keys</code> / <code>auto_vacuum</code>。<strong>四条 pragma 顺序不能动</strong>——<code>auto_vacuum</code> 排在 WAL 后面会静默失效，有测试盯着</td></tr>
+      <tr><td>迁移</td><td>版本号存 <code>PRAGMA user_version</code>，每个迁移单独包事务。SQLite 的 DDL 可回滚，跑到一半进程被杀不会留下半张表</td></tr>
+      <tr><td>流水实现</td><td>三条硬约束各有用例：<b>写流水永不抛</b>、<b>排序靠 <code>id</code> 不靠 <code>ts</code></b>（<code>Date.now()</code> 不单调）、<b><code>meta</code> 只收白名单</b>（密钥和语音内容进不去）</td></tr>
+      <tr><td>逐词明细</td><td>故意的冗余：<code>words_json</code> 保真作事实来源，<code>phoneme_score</code> 扁平表供查询。只存 JSON 的话「所有 /θ/ 的历史趋势」查不出来</td></tr>
+      <tr><td>保留与备份</td><td><code>prune()</code> + 在线 <code>incremental_vacuum</code>，实测文件确实缩小；备份走 <code>VACUUM INTO</code>——<strong>不能只拷 <code>.db</code></strong>，最近的事务在 <code>-wal</code> 里</td></tr>
+      <tr><td>花费</td><td><code>core/cost.ts</code> 纯函数换算，单位<b>微元</b>、整数运算、<b>向上取整</b>。<strong>缓存命中 / 失败 / 未调用一律不计费</strong>；评分按<b>修剪后</b>的时长计——首尾静音没送出去，不该进账单。费率从环境变量注入，不写死</td></tr>
+      <tr><td>service 维度</td><td>迁移 v3 加 <code>service</code> 列。<code>summary(a, b, 'scoring')</code> 才是「练了几次」——之前听一次范本再跟读一次会记 2</td></tr>
+      <tr><td>客户端契约</td><td><code>docs/api-contract.md</code>，826 行 <b>75 条编号条款</b>。改契约的顺序写死：<strong>先文档 → 再测试 → 最后代码</strong>。完整性判据是「每一条可测条款至少被一个测试引用」，测不了的条款显式列出并说明理由</td></tr>
+      <tr><td><code>GET /api/config</code></td><td>契约落地第 1 步。共享常量收进 <code>http/contract.ts</code> 成为唯一来源。<code>maxReferenceChars</code> 是 <b>import 求值不是抄字面量</b>——它是派生量，写死会在有人调整 30 秒上限时静默错位</td></tr>
+      <tr><td>测试</td><td>11 个文件 203 个用例，含用真实临时文件跑的并发用例（内存库没有文件锁，测并发是测了个寂寞）</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>还差一件事</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>编号</th><th>差什么</th><th>卡在哪</th></tr></thead>
+    <tbody>
+      <tr><td class="num"><span class="dot y"></span>F12</td><td><b>四张业务表零数据。</b>表建了、测了，但没有任何生产调用方</td><td>契约已成文，落地顺序见 <code>api-contract.md</code> §17 —— 六步，<b>第 1 步已完成</b>。做完第 5 步 F12 关闭：练一次，四张表各多一行</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note">M05 的三条验收——「上周<b>练了几次</b>、<b>失败几次</b>、<b>花了多少</b>」——<b>现在三问全都答得上</b>。「练了几次」是 <code>summary(a, b, 'scoring').requests</code>，把听范本排除在外。另一条验收「改一次表结构后重跑，老记录不丢」有专门用例守着，迁移已经跑到 v3。<br><br>剩下的 F12 答的是<b>另一类问题</b>——「哪一句练得最差」「这个音素在变好吗」——不在这三问里。</p>
+</section>
+
+<section>
+  <h2>本轮修掉的一个 bug <em>THREE GAPS, ONE CORRUPTION</em></h2>
+  <p><b>音频缓存会被永久写坏</b>，而三个各自被归档为「可以缓一缓」的缺口，谁都没描述这件事。</p>
+<pre><span class="c">F4 无 in-flight 去重</span>
+  → 两个并发的相同请求，各调一次 provider
+  → 缓存键是<span class="c">请求哈希</span>不是内容哈希，两段音频不保证逐字节相同
+  → 并发 writeFile 到同一路径（先截断再写）→ 交错 → 坏 WAV
+<span class="c">get() 只 stat 不校验内容</span>
+  → 坏文件被当成缓存命中
+<span class="c">F8 无淘汰</span>
+  → 永远不会被替换掉</pre>
+  <p>用户看到的是某一句话的音频<strong>永远</strong>是坏的：重启没用，也没有任何界面能清掉它。第二条触发路径是磁盘满——写到一半 ENOSPC，截断的文件留在那里。</p>
+  <p class="note"><b>修法：</b>写临时文件再 <code>rename()</code>，同目录内的 rename 在 POSIX 上是原子的。<b>验证方式：</b>把修复临时撤回，三条并发用例立刻变红——<b>测试抓不到 bug 就是摆设</b>。这也让 F4 的归类第一次准确：在 <code>put()</code> 修好之前，它不只是「付两次钱」。</p>
+</section>
+
+<section>
+  <h2>仓库里的对应文件 <em>SOURCE OF TRUTH</em></h2>
+  <p>这个页面是给人看的视图，<strong>仓库里的文件才是权威</strong>。改动先落到仓库，再同步到这里。</p>
+  <div class="scroll">
+  <table>
+    <thead><tr><th>文件</th><th>内容</th></tr></thead>
+    <tbody>
+      <tr><td><code>docs/roadmap.md</code></td><td>本页的完整版：里程碑、三个维度的分工、已知缺口、已核实与未核实</td></tr>
+      <tr><td><code>docs/api-contract.md</code></td><td>客户端契约 v0：75 条编号条款、测试清单、破坏性变更定义、落地顺序</td></tr>
+      <tr><td><code>docs/roadmap-artifact.html</code></td><td>本页的源文件。页面改动同样先落到仓库</td></tr>
+      <tr><td><code>docs/decisions.md</code></td><td>42 条决策记录，含日期、理由、被淘汰的方案</td></tr>
+      <tr><td><code>CHANGELOG.md</code></td><td>版本变更，含每版的实测数据</td></tr>
+      <tr><td><code>README.md</code></td><td>怎么跑起来、设计原则、不可逾越的边界、测试完整性五条判据</td></tr>
+      <tr><td class="dim">桌面 · 工程笔记</td><td class="dim">可迁移的经验：五条判据、六个 bug、九次错判，不重复项目状态</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="note"><a href="https://github.com/LuoDaXiang/Inkling/blob/main/docs/roadmap.md" target="_blank" rel="noopener">github.com/LuoDaXiang/Inkling → docs/roadmap.md</a></p>
+</section>
+
+</div>

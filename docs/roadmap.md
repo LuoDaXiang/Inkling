@@ -31,12 +31,12 @@ M01  能打开的东西        ✅   v0.1.0
 M02  评分效度测量        ✅
 M04  评分服务层          ✅   四块全完成
 M03  浏览器录音          ✅   v0.2.0 · 跟读闭环通了
-M05  SQLite 与流水       🔨   待动手              ← 现在在这
+M05  SQLite 与流水       🔨   进行中 · 流水已上线   ← 现在在这
 M06  AI 生成与导入       ⏸
 M07  还测试债            ⏸
 ```
 
-离线 743 个用例，两秒内跑完；live 23 个（TTS 8 + 评估 15），手动跑。
+离线 946 个用例（29 个文件），七秒内跑完；live 23 个（TTS 8 + 评估 15），手动跑。
 
 **M03 和 M04 的顺序调换过**，理由值得写下来：
 
@@ -198,7 +198,7 @@ provider、组件、主进程模型三处，每处都混着 IPC 和文件系统�
 数据集告诉我们 Azure 在普通话母语者这个群体上准不准，这两段告诉我们
 它在**你**身上准不准。不阻塞任何事，但值得做。
 
-### M05 — SQLite 与操作流水　⏸
+### M05 — SQLite 与操作流水　🔨
 
 | | |
 | --- | --- |
@@ -218,6 +218,36 @@ provider、组件、主进程模型三处，每处都混着 IPC 和文件系统�
 **趋势曲线以准确度为主线**，流利度和语调作对照。准确度的绝对值虚高约 20 分，
 所以曲线画的是**相对变化**而不是原始分数——用户要看的是「我在变好吗」，
 不是「我今天得了 85 分」。
+
+#### 已完成
+
+| | |
+| --- | --- |
+| 连接层 | STRICT / WAL / busy_timeout / foreign_keys / auto_vacuum，pragma 顺序有测试盯着（0037） |
+| 迁移 | `PRAGMA user_version`，每个迁移单独包事务，DDL 可回滚 |
+| 六张表 | 四张业务表 + `operations` + `phoneme_score`（双写，0039） |
+| 流水实现 | 三条硬约束全部有测试：永不抛、排序靠 id、meta 白名单（0038） |
+| **流水接线** | 两条路由都埋了 request / result / error，`main.ts` 负责开库、迁移、优雅关闭 |
+| 备份 | `VACUUM INTO`，不能只拷 `.db` |
+| 保留策略 | `prune()` + 在线 `incremental_vacuum`，实测文件确实缩小 |
+| **花费** | `core/cost.ts` 纯函数换算，费率从环境变量注入。缓存命中 / 失败 / 未调用一律不计费（0041） |
+| **service 维度** | 迁移 v3 加 `service` 列，`summary(from, to, 'scoring')` 才是「练了几次」（0042） |
+| **客户端契约** | `docs/api-contract.md`，826 行 75 条编号条款。改契约的顺序写死：先文档 → 再测试 → 最后代码 |
+| **`GET /api/config`** | 契约落地第 1 步。共享常量收进 `http/contract.ts` 成为唯一来源，客户端启动时取 |
+| 测试 | 11 个文件 203 个用例，含真实文件库的并发用例与跨层一致性用例 |
+
+#### 未完成
+
+| | 差什么 |
+| --- | --- |
+| **四张业务表零数据** | 表建了、测了，但**没有任何生产调用方**。练一整天，四张表都是空的。落地方案见 `docs/api-contract.md` §17，六步，第 1 步已完成 |
+
+**业务表卡在 API 缺口，不是实现缺口**：没有创建材料和句子的入口，
+客户端也不发 `sentenceId`，评分结果找不到该挂在哪一行。需要先定客户端契约。
+
+三条验收里现在**两条已经答得上**：「失败几次」和「花了多少」。
+「练了几次」= `summary(a, b, 'scoring').requests`，也对了。
+剩下的只有业务表——它答的是另一类问题（哪一句练得最差），不在这三问里。
 
 ### M06 — AI 生成与导入　⏸
 
@@ -256,13 +286,21 @@ provider、组件、主进程模型三处，每处都混着 IPC 和文件系统�
 | F6 | 假 fetch 的 headers / 超时模拟 | `tests/helpers/` | M04 | ✅ 已完成 |
 | F10 | 错误分类搬到 `core/` | `core/errors.ts` | M04 | ✅ 已完成（434 个老用例一行未改） |
 | F3 | `split` 不知道 30 秒这个约束。切出来的每一句都必须是可评分单元 | `split.ts` | M06 | 🔴 |
-| F4 | 无 in-flight 去重，并发相同请求付两次钱 | `synthesize.ts` | M07 | 🔴 |
+| F4 | 无 in-flight 去重，并发相同请求付两次钱。**曾经同时是数据损坏的触发器**，F15 修好后才真的只剩重复付费（0040） | `synthesize.ts` | M07 | 🔴 |
 | F5 | 无变异测试。覆盖率只说明代码被执行，不说明断言够狠 | `package.json` | M07 | 🔴 |
 | F7 | 16 个不变量只跑 8 个手选样本，该上 fast-check | `split.test.ts` | M07 | 🔴 |
 | F8 | 缓存无上界，无淘汰 | `audio-store.ts` | M07 | 🔴 |
 | F1 | 评分实现 | `providers/scoring/` | M04 | ✅ 四块全完成 |
 | F2 | 音频格式校验 | `wav.ts` | M03 | 🟡 `assertAssessable` 已有，浏览器侧待做 |
 | F9 | 无 CI | `.github/workflows/` | M01 | ✅ 已完成 |
+| F12 | 四张业务表已建未接线，没有任何生产调用方 | `storage/records.ts` | M05 | 🔨 方案见 `api-contract.md` §17，第 1/6 步已完成 |
+| F13 | 流水不记花费，`cost_micros` 永远为空 | `http/server.ts` | M05 | ✅ 已完成（0041） |
+| F14 | `summary()` 不区分 TTS 与评分，「练了几次」数不对 | `storage/operations.ts` | M05 | ✅ 已完成（0042，迁移 v3） |
+| F15 | 音频缓存非原子写入，并发或中断会**永久**写坏且被当成命中 | `file-audio-store.ts` | M05 | ✅ 已完成（0040） |
+| F16 | `main.ts` 没有自动化测试，只做过一次手动冒烟 | `http/main.ts` | M05 | 🟡 |
+| F18 | 客户端两处硬编码（采样率、最长秒数）仍在原地。`GET /api/config` 已下发，但客户端还没改成取它 | `public/` | M05 | 🔨 契约 §13 第 1 条，落地第 6 步 |
+| F19 | `public/` 零测试基础设施，契约 §8 的九条客户端承诺全靠自觉 | `public/` | 未归属 | 🔴 契约 §14 称其为「v0 契约最薄的一环」 |
+| F17 | `node:sqlite` 是实验性 API，行为随 Node 版本变（布尔绑定已实测到差异） | `storage/db.ts` | 持续 | 🟡 |
 
 ---
 
@@ -297,6 +335,35 @@ provider、组件、主进程模型三处，每处都混着 IPC 和文件系统�
 - Azure **忽略** `Content-Type` 里的采样率声明，自己读 WAV 头
 - 带 `LIST` 块的 WAV 照收——**我们的 `parseWav` 曾经比 Azure 还严格**
 
+**跨层常量分叉（本机变异测试实测）**
+
+- 单独改服务端的 `RECORDING_SAMPLE_RATE` → **2 条测试红**；
+  单独改 `MAX_ASSESSABLE_SECONDS` → **8 条红**，散在 6 个文件里
+- 但那些既有断言**全都是「服务端常量 == 字面量」或服务端两个常量互相对账，
+  没有一条看过客户端**。真正没人守的是反方向：改客户端那份 16000，全绿——
+  而那恰恰是更容易发生的方向，改前端的人不会去跑服务端测试
+- `tests/contract-consistency.test.ts` 补的就是这个方向。它 import
+  `public/recorder.js` 的真实导出，值只从 HTTP 响应取，并有一条自检用例
+  读自己的源码防止将来有人 import 服务端常量把它退化成自己等于自己
+
+**SQLite 与 `node:sqlite`（本机实测，Node v22.22.3 / SQLite 3.51.3）**
+
+- **pragma 顺序有影响**：`journal_mode=WAL` 排在 `auto_vacuum` 前面，会让
+  auto_vacuum 静默停留在 0（不报错）。反过来才是 2。WAL 写数据库头，头一写下就焊死
+- **DELETE 不还空间**：删掉 4000 行流水，`.db` 文件大小**一个字节不变**；
+  `incremental_vacuum` 之后缩到不足一半
+- `STRICT` 表确实拒绝类型错误：`cannot store TEXT value in INTEGER column`
+- 双引号字符串字面量在这个构建里是**关的**——列名打错会报 `no such column`，不会静默变成常量
+- **布尔绑定直接抛** `Provided value cannot be bound`。Node main 的
+  `test-sqlite-data-types.js` 里 `true` 会转成 1——**上游文档和本机运行时不一致**
+- `undefined` 绑定抛 `ERR_INVALID_ARG_TYPE`；TypeScript 也在编译期就拒绝
+- 超过 2^53 的整数读回来抛 `too large`，要显式 `setReadBigInts(true)`
+- 返回的行对象是 **null 原型**，外部 JSON 里的 `__proto__` 不会污染原型链
+- `node:sqlite` **不在 `module.builtinModules` 里**（但 `isBuiltin` 返回 true），
+  这正是 Vite 解析不了它的原因（0036）
+- `BEGIN IMMEDIATE` 可以造出确定性的写锁竞争，不必靠 sleep 碰运气
+- 优雅关闭（SIGTERM → `db.close()`）会 checkpoint 掉 `-wal` 和 `-shm`，只剩一个自包含的 `.db`
+
 **其他**
 
 - 评分**完全确定性**：同一段音频评三次，五项分数一字不差。趋势曲线有意义
@@ -315,4 +382,13 @@ provider、组件、主进程模型三处，每处都混着 IPC 和文件系统�
 - 儿童样本的相关性（效度测量筛掉了 1280 条）
 - 效度测量只有一个种子、n=137，没有置信区间
 - 麦克风回声：用户外放范本时可能把 TTS 录进去
+- **流水写入在真实并发下的延迟**：`node:sqlite` 是同步 API，会阻塞事件循环。
+  单行 INSERT 到 WAL 通常在微秒级，但**没有实测过**
+- **`operations` 的实际增长速率**，因此保留窗口该设多长也没有依据
+- **失败的调用到底计不计费**：现在的实现假设「重试后成功只计一次」，
+  因为失败的尝试通常不计费。**没有拿真实账单核对过**
+- **费率本身**：`.env.example` 里的数量级仅供参考，必须按自己的 Azure
+  定价页和账单核对。费率错了不会有任何东西报错
+- **`phoneme_score` 在真实数据量下的查询性能**：一句 10 词 × 每词约 3 音素
+  = 每次录音 30+ 行，练一年是几十万行。建了索引，但没有压过
 - 所有工时估算
