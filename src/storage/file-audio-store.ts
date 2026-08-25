@@ -1,5 +1,5 @@
-import { mkdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
-import { randomUUID } from "node:crypto";
+import { mkdir, readFile, stat, unlink } from "node:fs/promises";
+import { TEMP_SUFFIX, writeFileAtomic } from "./atomic-write";
 import { join, resolve } from "node:path";
 import type { AudioFormat } from "@/providers/tts/types";
 import type { AudioStore, StoredAudio } from "./audio-store";
@@ -20,12 +20,11 @@ const KEY_PATTERN = /^[0-9a-f]{64}$/;
 const FORMATS: ReadonlySet<string> = new Set<AudioFormat>(["wav", "mp3"]);
 
 /**
- * 临时文件后缀。
- *
- * 必须是 KEY_PATTERN 认不出来的形状，这样半路夭折的临时文件
- * 既不会被 get() 当成缓存命中，也不会被当成合法的键。
+ * `TEMP_SUFFIX` 从 `atomic-write.ts` 来。它必须是 KEY_PATTERN 认不出来的形状，
+ * 这样半路夭折的临时文件既不会被 get() 当成缓存命中，也不会被当成合法的键。
+ * 这条性质有测试守着。
  */
-const TEMP_SUFFIX = ".tmp";
+void TEMP_SUFFIX;
 
 export class FileAudioStore implements AudioStore {
   private readonly dir: string;
@@ -74,17 +73,7 @@ export class FileAudioStore implements AudioStore {
     assertFormat(format);
     await this.ensureDir();
     const path = this.pathFor(key, format);
-    const temp = `${path}.${randomUUID()}${TEMP_SUFFIX}`;
-
-    try {
-      await writeFile(temp, audio);
-      await rename(temp, path);
-    } catch (err) {
-      // 失败就把临时文件收走，别在缓存目录里堆垃圾。
-      await unlink(temp).catch(() => undefined);
-      throw err;
-    }
-
+    await writeFileAtomic(path, audio);
     return { key, format, bytes: audio.byteLength, location: path };
   }
 

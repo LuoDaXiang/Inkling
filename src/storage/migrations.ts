@@ -139,6 +139,22 @@ export const MIGRATIONS: readonly Migration[] = [
       db.exec("CREATE INDEX idx_operations_service ON operations(service, ts)");
     },
   },
+  {
+    version: 4,
+    name: "评分可靠性与流水回指",
+    up(db) {
+      // reliable：1 = scored，0 = unreliable，NULL = v4 之前。契约 [C34]。
+      // 趋势曲线必须默认过滤 reliable = 0，否则被噪声记录污染，
+      // **而且这件事发生时没有任何征兆**——纯白噪声的准确度是 71 分。
+      db.exec("ALTER TABLE assessment ADD COLUMN reliable INTEGER");
+
+      // trace_id：把业务记录和 operations 流水双向打通。契约 [C74]。
+      // 没有它，排查「那次练习为什么失败」时从业务记录跳不到流水，
+      // 而这两处正在记录同一次调用。
+      db.exec("ALTER TABLE recording ADD COLUMN trace_id TEXT");
+      db.exec("CREATE INDEX idx_recording_trace ON recording(trace_id)");
+    },
+  },
 ];
 
 export function currentVersion(db: DatabaseSync): number {

@@ -39,7 +39,7 @@ Inkling 只做一条链路，把它做好：
 
 ```bash
 npm install
-npm test              # 946 个离线用例，七秒内跑完，不联网
+npm test              # 1024 个离线用例，十秒内跑完，不联网
 
 cp .env.example .env.local   # 填 AZURE_SPEECH_KEY 和 AZURE_SPEECH_REGION
 npm run test:live     # 23 个真实调用，会消耗免费额度
@@ -134,16 +134,16 @@ src/
   providers/            外部服务的具体实现
     tts/                Azure TTS（REST，零依赖）
     scoring/            发音评分：provider、响应解析、请求头构造
-  storage/              SQLite 连接与迁移、操作流水、业务表；音频存储（内存 + 文件，原子写）
+  storage/              SQLite 连接与迁移、操作流水、业务表；音频存储（TTS 缓存 + 用户录音，各自独立，原子写）
   http/                 本地服务：路由、静态文件
 public/                 前端页面 + 录音层（AudioWorklet，刻意做薄）
 scripts/                效度测量等一次性工具
-tests/                  946 个离线用例，29 个文件
+tests/                  1024 个离线用例，32 个文件
   live/                 23 个真实调用，手动跑
 docs/
   roadmap.md            路线图、已知缺口、已核实与未核实
   api-contract.md       客户端契约 v0：75 条编号条款、测试清单、落地顺序
-  decisions.md          决策记录，42 条
+  decisions.md          决策记录，43 条
 ```
 
 ## 路线图

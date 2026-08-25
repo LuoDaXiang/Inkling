@@ -419,11 +419,11 @@ describe("service 与花费（F13 / F14）", () => {
       // 直接用上传的采样数会把静音也算进账单。
       const res = await ratedAssess(withSilence(1.5, 2, 1.5)); // 上传 5 秒，实际约 2 秒
       const data = (await res.json()) as Record<string, unknown>;
-      const seconds = Number(data["seconds"]);
-      expect(seconds).toBeLessThan(3); // 确认真的被修剪了
+      const assessedMs = Number(data["assessedMs"]);
+      expect(assessedMs).toBeLessThan(3000); // 确认真的被修剪了
 
       const result = ratedRows().find((r) => r["kind"] === "result");
-      const expected = scoringCostMicros(Math.round(seconds * 1000), RATES);
+      const expected = scoringCostMicros(assessedMs, RATES);
       expect(Number(result?.["cost_micros"])).toBe(expected);
 
       // 而且明显小于按上传的 5 秒算出来的数

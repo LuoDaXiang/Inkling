@@ -231,6 +231,27 @@ describe("meta 白名单", () => {
     expect(META_KEYS).not.toContain("apiKey");
   });
 
+  test("契约要的两个键在白名单里 [C48][C75]", () => {
+    // 不在白名单里的键是**静默丢弃**的——忘了加就等于没记，而且不报错。
+    expect(META_KEYS).toContain("clientRequestId");
+    expect(META_KEYS).toContain("sentenceId");
+  });
+
+  test("clientRequestId 与 sentenceId 能写进去也读得回来", () => {
+    const db = memoryDb();
+    const log = new OperationLog(db);
+    log.append({
+      traceId: trace,
+      kind: "request",
+      meta: { clientRequestId: "0d5f8f5e-6c1e-4a5b-9a4e-2f7c1b3d4e5f", sentenceId: 88 },
+    });
+    expect(log.byTrace(trace)[0]?.meta).toEqual({
+      clientRequestId: "0d5f8f5e-6c1e-4a5b-9a4e-2f7c1b3d4e5f",
+      sentenceId: 88,
+    });
+    db.close();
+  });
+
   test("超长字符串被截断", () => {
     const json = serializeMeta({ reason: "x".repeat(5000) });
     expect(json).not.toBeNull();

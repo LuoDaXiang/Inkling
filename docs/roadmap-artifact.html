@@ -143,7 +143,7 @@ li::marker{color:var(--ink-faint)}
 
 <header class="masthead">
   <div class="kicker">
-    <span>Inkling</span><span>v0.2.0</span><span>Stage 0</span><span>946 离线 + 23 live</span><span>零运行时依赖</span>
+    <span>Inkling</span><span>v0.2.0</span><span>Stage 0</span><span>1024 离线 + 23 live</span><span>零运行时依赖</span>
   </div>
   <h1>跟读闭环通了</h1>
   <p class="standfirst">粘一句英文 → 合成范本 → 跟读录音 → 掐掉首尾静音 → 准确度为主的三项分数 + 逐词标记。这是项目第一次有完整的产品价值。</p>
@@ -198,16 +198,16 @@ li::marker{color:var(--ink-faint)}
     <div class="ms done"><span class="id">M02</span><span class="name"><b>评分效度测量</b><small>137 条真人样本对 5 位语言专家的共识，量化相关性</small></span><span class="st">已完成</span></div>
     <div class="ms done"><span class="id">M04</span><span class="name"><b>评分服务层</b><small>解析、请求头、provider、编排四块，覆盖率全 100%</small></span><span class="st">已完成</span></div>
     <div class="ms done"><span class="id">M03</span><span class="name"><b>浏览器录音</b><small>四个纯函数模块 + 状态机，171 个用例　·　<code>v0.2.0</code> 闭环通了</small></span><span class="st">已完成</span></div>
-    <div class="ms now"><span class="id">M05</span><span class="name"><b>SQLite 与操作流水</b><small>流水已上线、能记花费、能按侧统计；客户端契约成文，落地 <strong>1/6</strong> 步</small></span><span class="st">进行中</span></div>
+    <div class="ms now"><span class="id">M05</span><span class="name"><b>SQLite 与操作流水</b><small><strong>F12 关闭</strong>：练一次，四张业务表各多一行。契约落地 <strong>5/6</strong> 步，只剩客户端</small></span><span class="st">服务端完成</span></div>
     <div class="ms wait"><span class="id">M06</span><span class="name"><b>AI 生成与导入</b><small>按体裁生成，外加自己粘贴</small></span><span class="st">待做</span></div>
     <div class="ms wait"><span class="id">M07</span><span class="name"><b>还测试债</b><small>并发去重、变异测试、property-based、缓存上界</small></span><span class="st">待做</span></div>
   </div>
 
   <div class="stats">
-    <div class="stat"><b>946</b><small>离线用例</small><span class="delta">+625 自 v0.1.0</span></div>
-    <div class="stat"><b>29</b><small>测试文件</small><span class="delta">+20</span></div>
+    <div class="stat"><b>1024</b><small>离线用例</small><span class="delta">+703 自 v0.1.0</span></div>
+    <div class="stat"><b>32</b><small>测试文件</small><span class="delta">+23</span></div>
     <div class="stat"><b>100%</b><small>八个新文件覆盖率</small><span class="delta">评分层 + 录音层</span></div>
-    <div class="stat"><b>42</b><small>决策记录</small><span class="delta">+28</span></div>
+    <div class="stat"><b>43</b><small>决策记录</small><span class="delta">+29</span></div>
     <div class="stat"><b>0</b><small>运行时依赖</small><span class="delta">保持</span></div>
   </div>
 </section>
@@ -281,7 +281,7 @@ li::marker{color:var(--ink-faint)}
       <tr><td class="num"><span class="dot r"></span>F12</td><td>四张业务表已建未接线，没有任何生产调用方</td><td class="num">M05</td></tr>
       <tr><td class="num"><span class="dot y"></span>F16</td><td><code>main.ts</code> 没有自动化测试，只做过一次手动冒烟</td><td class="num">M05</td></tr>
       <tr><td class="num"><span class="dot y"></span>F17</td><td><code>node:sqlite</code> 是实验性 API，行为随 Node 版本变（布尔绑定已实测到差异）</td><td class="num">持续</td></tr>
-      <tr><td class="num"><span class="dot y"></span>F18</td><td>客户端两处硬编码仍在原地。<code>GET /api/config</code> 已下发，客户端还没改成取它</td><td class="num">M05</td></tr>
+      <tr><td class="num"><span class="dot y"></span>F18</td><td>客户端没跟上契约：两处硬编码仍在、assess 仍发 <code>reference</code> 而非 <code>sentenceId</code>、采集参数没有回读上报</td><td class="num">M06</td></tr>
       <tr><td class="num"><span class="dot r"></span>F19</td><td><code>public/</code> 零测试基础设施，契约 §8 的九条客户端承诺全靠自觉</td><td class="num">未归属</td></tr>
       <tr><td class="num"><span class="dot g"></span>F13</td><td>流水不记花费，<code>cost_micros</code> 永远为空</td><td class="num">已完成</td></tr>
       <tr><td class="num"><span class="dot g"></span>F14</td><td><code>summary()</code> 不区分 TTS 与评分，「练了几次」数不对</td><td class="num">已完成</td></tr>
@@ -337,21 +337,23 @@ li::marker{color:var(--ink-faint)}
       <tr><td>service 维度</td><td>迁移 v3 加 <code>service</code> 列。<code>summary(a, b, 'scoring')</code> 才是「练了几次」——之前听一次范本再跟读一次会记 2</td></tr>
       <tr><td>客户端契约</td><td><code>docs/api-contract.md</code>，826 行 <b>75 条编号条款</b>。改契约的顺序写死：<strong>先文档 → 再测试 → 最后代码</strong>。完整性判据是「每一条可测条款至少被一个测试引用」，测不了的条款显式列出并说明理由</td></tr>
       <tr><td><code>GET /api/config</code></td><td>契约落地第 1 步。共享常量收进 <code>http/contract.ts</code> 成为唯一来源。<code>maxReferenceChars</code> 是 <b>import 求值不是抄字面量</b>——它是派生量，写死会在有人调整 30 秒上限时静默错位</td></tr>
-      <tr><td>测试</td><td>11 个文件 203 个用例，含用真实临时文件跑的并发用例（内存库没有文件锁，测并发是测了个寂寞）</td></tr>
+      <tr><td>业务表接线</td><td>契约第 2–5 步：v4 迁移、<code>POST /api/materials</code>、录音 store、assess 落库。<strong>练一次，四张业务表各多一行</strong>，录音可回放</td></tr>
+      <tr><td>落盘顺序</td><td><strong>先写音频文件、后开事务写库</strong>（<code>[C67]</code>）。文件系统不参与 SQLite 事务，两种失败后果不对称：孤儿文件浪费磁盘，悬空引用是用户看到坏记录。<b>宁可浪费磁盘</b></td></tr>
+      <tr><td>测试</td><td>14 个文件 281 个用例，含用真实临时文件跑的并发用例（内存库没有文件锁，测并发是测了个寂寞）</td></tr>
     </tbody>
   </table>
   </div>
 
-  <h3>还差一件事</h3>
+  <h3>还差客户端</h3>
   <div class="scroll">
   <table>
-    <thead><tr><th>编号</th><th>差什么</th><th>卡在哪</th></tr></thead>
+    <thead><tr><th>编号</th><th>差什么</th><th>什么时候做</th></tr></thead>
     <tbody>
-      <tr><td class="num"><span class="dot y"></span>F12</td><td><b>四张业务表零数据。</b>表建了、测了，但没有任何生产调用方</td><td>契约已成文，落地顺序见 <code>api-contract.md</code> §17 —— 六步，<b>第 1 步已完成</b>。做完第 5 步 F12 关闭：练一次，四张表各多一行</td></tr>
+      <tr><td class="num"><span class="dot y"></span>F18</td><td><b>客户端还没跟上契约。</b>§13 那九条只做了第 9 条（改用 <code>Ms</code> 字段）——不做的话界面会读到不存在的字段</td><td>放到 M06 一起做：那时候 AI 生成本来就要重做导入界面。服务端这一侧已经全部就位，用 curl 或脚本就能跑完整流程</td></tr>
     </tbody>
   </table>
   </div>
-  <p class="note">M05 的三条验收——「上周<b>练了几次</b>、<b>失败几次</b>、<b>花了多少</b>」——<b>现在三问全都答得上</b>。「练了几次」是 <code>summary(a, b, 'scoring').requests</code>，把听范本排除在外。另一条验收「改一次表结构后重跑，老记录不丢」有专门用例守着，迁移已经跑到 v3。<br><br>剩下的 F12 答的是<b>另一类问题</b>——「哪一句练得最差」「这个音素在变好吗」——不在这三问里。</p>
+  <p class="note">M05 的三条验收——「上周<b>练了几次</b>、<b>失败几次</b>、<b>花了多少</b>」——<b>全部答得上</b>。另一条「改一次表结构后重跑，老记录不丢」有专门用例守着，迁移已经跑到 <b>v4</b>。<br><br><b>F12 关闭。</b>真机验证过：建材料 → 分句 → 拿到 <code>sentenceId</code> → 评分落库 → 回放录音，整条链走得通；评分失败时四张业务表<b>零新增行</b>。</p>
 </section>
 
 <section>
@@ -379,7 +381,7 @@ li::marker{color:var(--ink-faint)}
       <tr><td><code>docs/roadmap.md</code></td><td>本页的完整版：里程碑、三个维度的分工、已知缺口、已核实与未核实</td></tr>
       <tr><td><code>docs/api-contract.md</code></td><td>客户端契约 v0：75 条编号条款、测试清单、破坏性变更定义、落地顺序</td></tr>
       <tr><td><code>docs/roadmap-artifact.html</code></td><td>本页的源文件。页面改动同样先落到仓库</td></tr>
-      <tr><td><code>docs/decisions.md</code></td><td>42 条决策记录，含日期、理由、被淘汰的方案</td></tr>
+      <tr><td><code>docs/decisions.md</code></td><td>43 条决策记录，含日期、理由、被淘汰的方案</td></tr>
       <tr><td><code>CHANGELOG.md</code></td><td>版本变更，含每版的实测数据</td></tr>
       <tr><td><code>README.md</code></td><td>怎么跑起来、设计原则、不可逾越的边界、测试完整性五条判据</td></tr>
       <tr><td class="dim">桌面 · 工程笔记</td><td class="dim">可迁移的经验：五条判据、六个 bug、九次错判，不重复项目状态</td></tr>

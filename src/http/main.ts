@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { AzureTtsProvider } from "@/providers/tts/azure";
 import { AzureScoringProvider } from "@/providers/scoring/azure";
 import { FileAudioStore } from "@/storage/file-audio-store";
+import { RecordingStore } from "@/storage/recording-store";
 import { openDatabase } from "@/storage/db";
 import { migrate } from "@/storage/migrations";
 import { OperationLog } from "@/storage/operations";
@@ -83,6 +84,14 @@ const scoring = new AzureScoringProvider({ key: KEY, region: REGION });
 const store = new FileAudioStore(join(root, "data", "audio"));
 
 /**
+ * 用户录音，**独立目录**。
+ *
+ * 不和 TTS 缓存混在一起：F8 将来要给缓存加淘汰，混着放会把用户的录音
+ * 一起删掉——那是用户资产，不是缓存。键的语义也相反，见 [C38]。
+ */
+const recordings = new RecordingStore(join(root, "data", "recordings"));
+
+/**
  * 数据库。
  *
  * 开库和迁移都在启动时做完——和 Azure 密钥校验同一个道理：
@@ -134,6 +143,8 @@ const app = createApp({
   publicDir: join(root, "public"),
   defaultVoice: VOICE,
   log,
+  db,
+  recordings,
   ...(rates ? { rates } : {}),
 });
 

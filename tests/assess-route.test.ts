@@ -146,8 +146,10 @@ describe("POST /api/assess", () => {
     });
 
     test("回报修剪后的时长与信噪比", async () => {
+      // 单位进字段名（契约 [C28] [C41]）：assessedMs 取代了原来的 seconds。
+      // 原来一个响应里并存三种时间单位而文档只规定了其中一种，是歧义的温床。
       const { body } = await post(speech(2));
-      expect(body["seconds"]).toBeCloseTo(2, 1);
+      expect(body["assessedMs"] as number).toBeCloseTo(2000, -2);
       expect(body["snr"]).toBe(38.7);
     });
 
@@ -198,11 +200,11 @@ describe("POST /api/assess", () => {
       // 用户点「录音」到开口总有一两秒空白，这段静音会拉低流利度分数，
       // 而它和发音水平毫无关系。
       const { body } = await post(withSilence(1.5, 1, 1.5));
-      expect(body["seconds"] as number).toBeLessThan(1.5);
+      expect(body["assessedMs"] as number).toBeLessThan(1500);
 
-      const trimmed = body["trimmed"] as { start: number; end: number };
-      expect(trimmed.start).toBeGreaterThan(0);
-      expect(trimmed.end).toBeGreaterThan(0);
+      // trimmedStartMs / trimmedEndMs 取代了原来按采样数计的 trimmed.start/end。
+      expect(body["trimmedStartMs"] as number).toBeGreaterThan(0);
+      expect(body["trimmedEndMs"] as number).toBeGreaterThan(0);
     });
 
     test("低于阈值的底噪也算静音", async () => {
@@ -211,7 +213,7 @@ describe("POST /api/assess", () => {
       for (let i = 0; i < RECORDING_SAMPLE_RATE; i++) pcm[i] = quiet * Math.sin(i / 4);
 
       const { body } = await post(pcm);
-      expect((body["trimmed"] as { start: number }).start).toBeGreaterThan(0);
+      expect(body["trimmedStartMs"] as number).toBeGreaterThan(0);
     });
   });
 

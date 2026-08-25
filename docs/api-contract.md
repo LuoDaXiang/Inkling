@@ -706,7 +706,7 @@ ALTER TABLE recording  ADD COLUMN trace_id TEXT;
 | 6 | 生成并携带 `clientRequestId`；设 60 秒超时 | `index.html` |
 | 7 | 处理 `unreliable`（按 [C30] 降级）与 `persisted:false`（区分两种） | `index.html` `render()` |
 | 8 | `assessable: false` 的句子禁用录音按钮 | 新增 |
-| 9 | 改用 `trimmedStartMs` / `trimmedEndMs` / `assessedMs`，删掉本地的采样数换算 | `index.html:368` |
+| 9 | ✅ 改用 `trimmedStartMs` / `trimmedEndMs` / `assessedMs`，删掉本地的采样数换算 | `index.html:368` |
 
 ---
 
@@ -855,11 +855,13 @@ ALTER TABLE recording  ADD COLUMN trace_id TEXT;
 
 按**止血 → 打地基 → 建楼**排，不按「难改的先做」排。
 
-| # | 做什么 | 为什么排这里 |
-| --- | --- | --- |
-| 1 | `GET /api/config` + 契约测试 **#1、#2、#27** | **唯一现在就在流血的**，且不依赖任何其他改动。三条测试都只依赖 config 路由：#1 守 contractVersion 与 `no-store`，#2 守 `scoringAvailable`，#27 是那条**跨层一致性**断言——原文此处误写成「清单 #1」，一致性测试是 #27 |
-| 2 | v4 迁移 + `META_KEYS` | 表结构最难改，后面 3–5 全依赖它 |
-| 3 | `POST /api/materials` + 列表 / 详情 | 分配 `sentenceId`，打通身份 |
-| 4 | 录音音频 store（内容哈希，独立目录）+ 落盘顺序 [C67] | assess 落库的前置 |
-| 5 | `POST /api/assess` 改造 + 落库 + `persisted` 语义 | **做完这步 F12 关闭**：练一次，四张表各多一行 |
-| 6 | 客户端跟上（§13 那九条） | 依赖 1–5 全部就位 |
+**进度：1–5 已完成，只剩第 6 步客户端。**
+
+| # | 做什么 | 状态 | 为什么排这里 |
+| --- | --- | --- | --- |
+| 1 | `GET /api/config` + 契约测试 **#1、#2、#27** | ✅ | **唯一现在就在流血的**，且不依赖任何其他改动。三条测试都只依赖 config 路由：#1 守 contractVersion 与 `no-store`，#2 守 `scoringAvailable`，#27 是那条**跨层一致性**断言——原文此处误写成「清单 #1」，一致性测试是 #27 |
+| 2 | v4 迁移 + `META_KEYS` | ✅ | 表结构最难改，后面 3–5 全依赖它 |
+| 3 | `POST /api/materials` + 列表 / 详情 | ✅ | 分配 `sentenceId`，打通身份 |
+| 4 | 录音音频 store（内容哈希，独立目录）+ 落盘顺序 [C67] | ✅ | assess 落库的前置。原子写抽成共享函数，见决策 0043 |
+| 5 | `POST /api/assess` 改造 + 落库 + `persisted` 语义 | ✅ | **F12 已关闭**：练一次，四张表各多一行 |
+| 6 | 客户端跟上（§13 那九条） | 🔨 | 依赖 1–5 全部就位。第 9 条（改用 `Ms` 字段）已随第 5 步一起做了，否则界面会读到不存在的字段 |

@@ -95,6 +95,11 @@ export const META_KEYS: readonly string[] = [
   "echoCancellation",
   "noiseSuppression",
   "autoGainControl",
+  // 契约 [C48]：clientRequestId 是给 F4（in-flight 去重）预留的位置，
+  // v0 只记进流水不做去重。预留一个字段比将来加一个字段便宜一个数量级。
+  "clientRequestId",
+  // 契约 [C75]：让流水能反查到这次练的是哪一句。
+  "sentenceId",
 ];
 
 /** 单个字符串值的上限。Azure 挂掉时会返回整页 HTML，不截断就整页进库。 */

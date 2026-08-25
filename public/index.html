@@ -362,10 +362,15 @@ function render(data) {
         ? `发音都念准了。有 ${flat} 个词读得偏平，标黄的就是。`
         : "念准了，语调也自然。";
 
+  // 契约 [C28]：单位进字段名。assessedMs / trimmedStartMs / trimmedEndMs
+  // 取代了原来的 seconds（浮点秒）和 trimmed.start/end（采样数）——
+  // 一个响应里并存三种时间单位是歧义的温床。
+  // 换算也不再在这里做：服务端已经给的是毫秒（§13 第 9 条）。
+  const trimmedMs = (data.trimmedStartMs ?? 0) + (data.trimmedEndMs ?? 0);
   els.resultMeta.textContent =
     `识别到  ${data.recognized ?? "—"}\n` +
-    `时长    ${data.seconds?.toFixed(2) ?? "—"}s` +
-    (data.trimmed ? `（掐掉首尾静音 ${((data.trimmed.start + data.trimmed.end) / TARGET_SAMPLE_RATE).toFixed(2)}s）` : "") +
+    `时长    ${data.assessedMs != null ? (data.assessedMs / 1000).toFixed(2) : "—"}s` +
+    (trimmedMs > 0 ? `（掐掉首尾静音 ${(trimmedMs / 1000).toFixed(2)}s）` : "") +
     (data.snr != null ? `\n信噪比  ${data.snr.toFixed(1)} dB` : "");
 }
 

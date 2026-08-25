@@ -138,13 +138,50 @@ describe("老记录不丢（roadmap 的验收标准）", () => {
     ).run(1700000000000, "before-v3", "result", 3000);
 
     migrate(db);
-    expect(currentVersion(db)).toBe(3);
+    expect(currentVersion(db)).toBe(latestVersion());
 
     const row = db
       .prepare("SELECT * FROM operations WHERE trace_id = ?")
       .get("before-v3") as Record<string, unknown>;
     expect(Number(row["cost_micros"])).toBe(3000);
     expect(row["service"]).toBeNull();
+    db.close();
+  });
+
+  test("v3 写入的业务记录，迁到 v4 之后还在，且新列是 NULL", () => {
+    // v4 给 assessment 加 reliable、给 recording 加 trace_id，都是可空列。
+    // 老行**我们确实不知道**它可靠不可靠、对应哪条流水，所以是 NULL 不是猜一个值。
+    const db = emptyMemoryDb();
+    migrate(db, upTo(3));
+
+    const materialId = Number(
+      db.prepare("INSERT INTO material (title, source, created_at) VALUES (?, ?, ?)")
+        .run("t", "paste", 1).lastInsertRowid,
+    );
+    const sentenceId = Number(
+      db.prepare("INSERT INTO sentence (material_id, ord, text, created_at) VALUES (?, ?, ?, ?)")
+        .run(materialId, 0, "hi", 1).lastInsertRowid,
+    );
+    const recordingId = Number(
+      db.prepare(
+        "INSERT INTO recording (sentence_id, audio_key, duration_ms, created_at) VALUES (?, ?, ?, ?)",
+      ).run(sentenceId, "k", 1000, 1).lastInsertRowid,
+    );
+    db.prepare(`
+      INSERT INTO assessment
+        (recording_id, engine, accuracy, fluency, completeness, overall, recognized, words_json, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(recordingId, "azure", 90, 90, 90, 90, "hi", "[]", 1);
+
+    migrate(db);
+    expect(currentVersion(db)).toBe(4);
+
+    const rec = db.prepare("SELECT * FROM recording").get() as Record<string, unknown>;
+    const ass = db.prepare("SELECT * FROM assessment").get() as Record<string, unknown>;
+    expect(rec["audio_key"]).toBe("k");
+    expect(rec["trace_id"]).toBeNull();
+    expect(Number(ass["accuracy"])).toBe(90);
+    expect(ass["reliable"]).toBeNull();
     db.close();
   });
 
