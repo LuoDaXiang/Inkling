@@ -15,16 +15,24 @@ import { TARGET_SAMPLE_RATE } from "../public/recorder.js";
  *
  * ## 这个文件存在的唯一理由
  *
- * 录音采样率和最长秒数，此前是**两边各硬编码一份，没有任何东西盯着它们相等**：
+ * 录音采样率和最长秒数，此前是两边各硬编码一份：
  *
- *   16000  `src/http/server.ts` RECORDING_SAMPLE_RATE
- *   16000  `public/recorder.js` TARGET_SAMPLE_RATE
+ *   16000  `src/http/contract.ts` RECORDING_SAMPLE_RATE
+ *   16000  `public/recorder.js`   TARGET_SAMPLE_RATE
  *      30  `src/core/audio/wav.ts` MAX_ASSESSABLE_SECONDS
  *      30  `public/index.html`     MAX_SECONDS
  *
- * 改服务端那一份，全部测试照绿，浏览器仍然发 16000——时长算错、
- * 修剪切错、计费算错，而且**不报错**。这正撞在 README 判据五
- * 「跨层约束要有整条链的断言」上。
+ * **而没有一条测试看过客户端那一份。** 变异实测（这个文件落地之前）：
+ *
+ *   服务端 RECORDING_SAMPLE_RATE  16000 → 8000  红 1 条
+ *   服务端 MAX_ASSESSABLE_SECONDS    30 → 40    红 7 条，5 个文件
+ *   客户端 TARGET_SAMPLE_RATE     16000 → 8000  **红 0 条**
+ *   客户端 MAX_SECONDS               30 → 40    **红 0 条**
+ *
+ * 服务端那一侧被既有测试用字面量钉着，客户端那一侧一条都没有——
+ * 而那恰恰是更容易发生的方向：改前端的人不会去跑服务端测试。
+ * 后果是时长算错、修剪切错、计费算错，而且**不报错**。
+ * 这正撞在 README 判据五「跨层约束要有整条链的断言」上：链条只有半条。
  *
  * ## 一条禁令
  *
@@ -32,8 +40,10 @@ import { TARGET_SAMPLE_RATE } from "../public/recorder.js";
  *
  * 服务端的值只能从 HTTP 响应里来，客户端的值只能从 `public/` 里来。
  * 一旦为了「写起来简洁」而 import 服务端常量去断言，这条测试就退化成
- * 自己等于自己——那正是这个 bug 至今没被发现的原因，不是没人写测试，
- * 是写的测试两边取的是同一个值。
+ * 自己等于自己——**而且退化之后它照样是绿的**，没有任何东西会报警。
+ *
+ * 缺口原本不是「测试取错了值」，是**客户端那一侧压根没有测试**。
+ * 这条禁令防的是把新补上的那一侧再退化回去。
  *
  * 允许 import 的只有 `createApp`：那是被测系统本身，不是被断言的值。
  *

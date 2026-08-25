@@ -120,9 +120,22 @@ v0 的用户故事到 ⑧ 为止。
 | 上传上限 | 2 MiB | `src/http/server.ts` `MAX_PCM_BYTES` | 无 | 只能等 413 |
 | 参考文本上限 | 900 | `src/providers/scoring/config.ts` `MAX_REFERENCE_CHARS` | 无 | 请求挂死而不是报错 |
 
-前两条是**两边各硬编码一份、没有任何东西盯着它们相等**。
-`tests/ops-wiring.test.ts:7` import 的是服务端那个常量，所以改服务端的值测试照绿，
-浏览器仍发 16000——这正好撞在 README 判据五「跨层约束要有整条链的断言」上。
+前两条是**两边各硬编码一份，而且没有一条测试看过客户端那一份**。
+
+服务端那一侧其实被多条既有测试用字面量钉着。变异测试实测（`GET /api/config` 落地之前）：
+
+| 把哪个值改掉 | 变红的既有测试 |
+| --- | --- |
+| 服务端 `RECORDING_SAMPLE_RATE` 16000 → 8000 | 1 条 |
+| 服务端 `MAX_ASSESSABLE_SECONDS` 30 → 40 | 7 条，散在 5 个文件 |
+| **客户端 `TARGET_SAMPLE_RATE` 16000 → 8000** | **0 条** |
+| **客户端 `MAX_SECONDS` 30 → 40** | **0 条** |
+
+**真正没人守的是客户端那一侧**——而那恰恰是更容易发生的方向：
+改前端的人不会去跑服务端测试。
+
+这正撞在 README 判据五「跨层约束要有整条链的断言」上：既有断言全都是
+「服务端常量 == 字面量」或者服务端两个常量互相对账，**链条只有半条**。
 
 **解法不是加一条断言，是消灭这一整类问题**：服务端成为唯一来源，客户端启动时取。
 
@@ -740,7 +753,7 @@ ALTER TABLE recording  ADD COLUMN trace_id TEXT;
 
 | # | 测试 | 守哪条 |
 | --- | --- | --- |
-| 27 | **采样率与秒数一致性**：断言 `public/recorder.js` 导出的 `TARGET_SAMPLE_RATE` 等于 `GET /api/config` 的 `recordingSampleRate`。**不允许 import 同一个常量来断言**——那测的是自己等于自己，正是 `tests/ops-wiring.test.ts:7` 现在的做法，也正是这个 bug 至今没被发现的原因。`maxRecordingSeconds` 同理 | C3 C50 |
+| 27 | **采样率与秒数一致性**：断言 `public/recorder.js` 导出的 `TARGET_SAMPLE_RATE` 等于 `GET /api/config` 的 `recordingSampleRate`，`maxRecordingSeconds` 同理。**不允许 import 服务端常量来断言**——值必须一边取自 `public/`、一边取自 HTTP 响应，否则测的是自己等于自己。测试文件里带一条自检用例，读自己的源码守着这条禁令 | C3 C50 |
 | 28 | **副作用矩阵逐行核对**：断言**不该被写的表确实没被写**。需要一个统一 helper（跑前后 diff 六张表的行数），只断言「该写的写了」抓不到多写 | C33 §10 |
 | 29 | **落盘顺序**：注入会抛的 db → 断言音频文件**已存在**（孤儿而非悬空）；注入会抛的文件写 → 断言库里零新增行 | C67 |
 
