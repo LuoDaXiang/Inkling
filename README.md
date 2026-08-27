@@ -39,7 +39,7 @@ Inkling 只做一条链路，把它做好：
 
 ```bash
 npm install
-npm test              # 1024 个离线用例，十秒内跑完，不联网
+npm test              # 1095 个离线用例，十秒内跑完，不联网
 
 cp .env.example .env.local   # 填 AZURE_SPEECH_KEY 和 AZURE_SPEECH_REGION
 npm run test:live     # 23 个真实调用，会消耗免费额度
@@ -137,8 +137,10 @@ src/
   storage/              SQLite 连接与迁移、操作流水、业务表；音频存储（TTS 缓存 + 用户录音，各自独立，原子写）
   http/                 本地服务：路由、静态文件
 public/                 前端页面 + 录音层（AudioWorklet，刻意做薄）
+                        contract.js / present.js 是客户端契约层，不碰 DOM
 scripts/                效度测量等一次性工具
-tests/                  1024 个离线用例，32 个文件
+tests/                  1095 个离线用例，34 个文件
+  client/               客户端契约层的用例，DOM-free
   live/                 23 个真实调用，手动跑
 docs/
   roadmap.md            路线图、已知缺口、已核实与未核实
