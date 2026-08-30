@@ -1,0 +1,149 @@
+/*
+ * 冻结副本 —— 2026-08-29，M3 删掉 `public/` 之前的最后状态。
+ *
+ * 这个文件此前是 `public/app.css` 的一个**引用**，不是副本：复制一份进存档，
+ * 它和本体一天就会分叉，而分叉之后这张「对照物」会安静地开始撒谎。
+ *
+ * M3 把本体删了，判断因此反转：没有本体可以分叉，而存档必须还打得开。
+ * **不要修改这个文件。** 它的价值全部来自「它就是 M2 那一刻的样子」。
+ */
+/*
+ * 界面样式。
+ *
+ * 从 `index.html` 的 <style> 块抽出来的，一行没改。抽出来是为了让
+ * `docs/m2-baseline/` 那份 M2 定型快照能引用**同一份**样式——
+ * 一份被复制到存档里的 CSS，和它的本体一天就会分叉，
+ * 而 M3 的验收标准正是「和 M2 的截图长得一模一样」。
+ */
+:root {
+    --ground: #f4f5f6; --surface: #ffffff; --surface-2: #eceef0;
+    --ink: #1a1f24; --ink-soft: #5c676e; --ink-faint: #8b979e;
+    --line: #d8dee0; --accent: #0e6f78; --bad: #9c2f2f;
+    --good: #2f6b45; --warn: #a15612;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #101417; --surface: #191e22; --surface-2: #222932;
+      --ink: #e6eaec; --ink-soft: #949fa6; --ink-faint: #6c7a82;
+      --line: #2a3236; --accent: #4ec3cd; --bad: #e8807f;
+      --good: #6fc08d; --warn: #df9942;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 40px 20px 80px;
+    background: var(--ground); color: var(--ink);
+    font: 16px/1.6 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+  }
+  main { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+  h1 { margin: 0; font-size: 1.5rem; letter-spacing: -.02em; }
+  h1 small { font-weight: 400; font-size: .8rem; color: var(--ink-faint); margin-left: 8px; }
+  textarea {
+    width: 100%; min-height: 90px; padding: 14px 16px; resize: vertical;
+    background: var(--surface); color: var(--ink);
+    border: 1px solid var(--line); border-radius: 4px; font: inherit; line-height: 1.6;
+  }
+  textarea:focus-visible, button:focus-visible, select:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+  .bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button {
+    padding: 10px 20px; border: 0; border-radius: 4px;
+    background: var(--accent); color: var(--ground);
+    font: inherit; font-weight: 600; cursor: pointer;
+  }
+  button.ghost { background: var(--surface-2); color: var(--ink); }
+  button.rec { background: var(--bad); color: #fff; }
+  button:disabled { opacity: .45; cursor: default; }
+  label { font-size: 14px; color: var(--ink-soft); display: flex; gap: 6px; align-items: center; }
+  select {
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--surface); color: var(--ink); font: inherit; font-size: 14px;
+  }
+  audio { width: 100%; }
+  /*
+   * 音高曲线。绝对定位铺在容器上——将来这里会有波形图，曲线要盖在它上面，
+   * 所以从一开始就按「叠在别的东西之上」的方式布局，而不是自己占一行。
+   */
+  .pitch-wrap { position: relative; width: 100%; height: 120px; }
+  .pitch-wrap canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .pitch-legend {
+    display: flex; gap: 16px; font-size: 12px; color: var(--ink-soft);
+  }
+  .pitch-legend i { display: inline-block; width: 14px; height: 2px; vertical-align: middle; }
+  .pitch-legend .ref { background: var(--ink-soft); }
+  .pitch-legend .mine { background: var(--accent); }
+  .status { font-size: 14px; color: var(--ink-soft); min-height: 1.6em; }
+  .status.error { color: var(--bad); }
+  .meta { font: 12px/1.7 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink-faint); white-space: pre-wrap; }
+  section {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 4px; padding: 18px 20px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  section h2 {
+    margin: 0; font-size: .78rem; font-weight: 600; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  .timer {
+    font: 600 1.6rem/1 ui-monospace, Menlo, monospace;
+    font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+  }
+  .track { height: 4px; background: var(--surface-2); border-radius: 2px; overflow: hidden; }
+  .track > div { height: 100%; width: 0; background: var(--bad); transition: width .1s linear; }
+  .scores { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+  .score { display: flex; flex-direction: column; gap: 2px; }
+  .score b { font: 600 1.5rem/1 ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; }
+  .score small { font-size: 12px; color: var(--ink-faint); }
+  .score.hero b { color: var(--accent); }
+  /*
+   * 逐词三层标记（decisions 0045）。三层各管一个字段，互不覆盖：
+   *   底色     .base-*      ← errorType + accuracy
+   *   下划线   .flat-1|2|3  ← monotone 的 0–1 强度，三档
+   *   角标     .brk::after  ← breakError
+   * 参考实现是一张查表，一个词只能显示一种错误；这里三层可以同时出现。
+   */
+  .words { display: flex; flex-wrap: wrap; gap: 6px; line-height: 2.4; }
+  .word {
+    position: relative; padding: 2px 6px; border-radius: 3px; font-size: 15px;
+    cursor: default;
+  }
+  .word.base-mispronounced { background: color-mix(in srgb, var(--bad) 20%, transparent); }
+  .word.base-omission {
+    background: color-mix(in srgb, var(--bad) 12%, transparent);
+    text-decoration: line-through var(--bad);
+  }
+  .word.base-insertion {
+    background: color-mix(in srgb, var(--ink-faint) 18%, transparent);
+    font-style: italic;
+  }
+  /* 下划线走 box-shadow，这样它和底色、和 base-omission 的删除线都不打架。 */
+  .word.flat-1 { box-shadow: inset 0 -1px 0 0 var(--warn); }
+  .word.flat-2 { box-shadow: inset 0 -2px 0 0 var(--warn); }
+  .word.flat-3 { box-shadow: inset 0 -3px 0 0 var(--warn); }
+  .word.brk::after {
+    content: attr(data-brk); position: absolute; top: -2px; right: -2px;
+    font-size: 10px; line-height: 1; color: var(--ink-faint);
+  }
+
+  /*
+   * 音素弹出层（0035 第 4 条）。视觉照参考实现：横向滚动、
+   * 每个音素一列、按分档着色。
+   */
+  .word .phonemes {
+    display: none; position: absolute; bottom: calc(100% + 6px); left: 0; z-index: 10;
+    max-width: 320px; overflow-x: auto; gap: 2px;
+    padding: 6px; border: 1px solid var(--line); border-radius: 4px;
+    background: var(--surface-2); box-shadow: 0 4px 14px rgb(0 0 0 / 18%);
+  }
+  .word:hover .phonemes, .word:focus-within .phonemes { display: flex; }
+  .phoneme {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    min-width: 34px; padding: 3px 4px; border-radius: 3px;
+    font: 12px/1.3 ui-monospace, Menlo, monospace; white-space: nowrap;
+  }
+  .phoneme.weak { background: color-mix(in srgb, var(--bad) 22%, transparent); }
+  .phoneme small { color: var(--ink-faint); font-size: 10px; }
+  .note { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+  .note b { color: var(--ink); }
+  [hidden] { display: none !important; }

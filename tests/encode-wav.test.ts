@@ -1,7 +1,7 @@
 import { describe, test, expect } from "vitest";
 import { encodeWav } from "@/core/audio/encode-wav";
 import { parseWav, InvalidWavError, MAX_ASSESSABLE_SECONDS } from "@/core/audio/wav";
-import { MAX_AUDIO_BYTES } from "@/http/server";
+import { MAX_AUDIO_BYTES } from "@/http/contract";
 
 /**
  * 输入空间分类（判据一，见 docs/decisions.md 0006）

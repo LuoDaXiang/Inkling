@@ -1,10 +1,14 @@
 import { describe, test, expect, beforeAll, afterAll, beforeEach } from "vitest";
-import type { AddressInfo } from "node:net";
-import type { Server } from "node:http";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createApp, RECORDING_SAMPLE_RATE } from "@/http/server";
+import {
+  postAssess as assessHandler,
+  postTts as ttsHandler,
+  type JsonResult,
+  type ServerDeps,
+} from "@/http/server";
+import { RECORDING_SAMPLE_RATE } from "@/http/contract";
 import type { ScoringProvider } from "@/providers/scoring/types";
 import type { TtsProvider, TtsRequest, TtsResult } from "@/providers/tts/types";
 import { FileAudioStore } from "@/storage/file-audio-store";
@@ -25,10 +29,19 @@ import { memoryDb } from "./helpers/db";
  * 前面所有关于「不抛」的用例都是在存储层验证的。但真正决定这条契约
  * 成不成立的是调用点：路由里只要有一个地方 await 了它、或者把它
  * 放进了 try 之外，契约就破了。所以必须在这一层再验一次。
+ *
+ * ## M2.5：驱动方式换了，断言一条没换
+ *
+ * 此前每个用例组都自己 `createApp()` 起一台监听在随机端口上的服务器——
+ * 这个文件里一共有五处。现在它们都只是一个 `ServerDeps` 字面量，
+ * 用例直接调 `ttsHandler` / `assessHandler`。
+ *
+ * 「接缝」这个测试目标一点没变：流水写在哪、写了什么、以及那条最重要的
+ * 「流水挂了业务照常」——它们守的是 handler 内部的调用点，
+ * 而调用点并不因为外面是 HTTP 还是 IPC 而不同。
  */
 
-let server: Server;
-let base: string;
+let deps: ServerDeps;
 let dir: string;
 let db: ReturnType<typeof memoryDb>;
 let log: OperationLog;
@@ -49,27 +62,20 @@ const scoringProxy: ScoringProvider = {
   assess: (r) => scoring.assess(r),
 };
 
-const portOf = (s: Server): number => (s.address() as AddressInfo).port;
-
 beforeAll(async () => {
   dir = await mkdtemp(join(tmpdir(), "inkling-ops-"));
   db = memoryDb();
   log = new OperationLog(db);
-  server = await new Promise<Server>((resolve) => {
-    const s = createApp({
-      provider: ttsProxy,
-      scoring: scoringProxy,
-      store: new FileAudioStore(join(dir, "audio")),
-      publicDir: join(dir, "public"),
-      defaultVoice: "en-US-AvaNeural",
-      log,
-    }).listen(0, () => resolve(s));
-  });
-  base = `http://127.0.0.1:${portOf(server)}`;
+  deps = {
+    provider: ttsProxy,
+    scoring: scoringProxy,
+    store: new FileAudioStore(join(dir, "audio")),
+    defaultVoice: "en-US-AvaNeural",
+    log,
+  };
 });
 
 afterAll(async () => {
-  await new Promise<void>((r) => server.close(() => r()));
   try {
     db.close();
   } catch {
@@ -103,19 +109,14 @@ const withSilence = (leadSec: number, speechSec: number, tailSec: number): Float
   return out;
 };
 
-const postTts = (text: string) =>
-  fetch(`${base}/api/tts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
-  });
+const postTts = async (text: string, at?: ServerDeps): Promise<JsonResult> =>
+  (await ttsHandler({ raw: JSON.stringify({ text }) }, at ?? deps)) as JsonResult;
 
-const postAssess = (pcm: Float32Array, reference = "hello world") =>
-  fetch(`${base}/api/assess?reference=${encodeURIComponent(reference)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/octet-stream" },
-    body: Buffer.from(pcm.buffer),
-  });
+const postAssess = async (pcm: Float32Array, reference = "hello world"): Promise<JsonResult> =>
+  (await assessHandler(
+    { query: { reference }, body: Buffer.from(pcm.buffer) },
+    deps,
+  )) as JsonResult;
 
 describe("TTS 路由", () => {
   test("成功一次记两行：request + result", async () => {
@@ -165,11 +166,7 @@ describe("TTS 路由", () => {
   });
 
   test("参数校验失败不记流水——请求根本没到达外部服务", async () => {
-    const res = await fetch(`${base}/api/tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ notText: 1 }),
-    });
+    const res = await ttsHandler({ raw: JSON.stringify({ notText: 1 }) }, deps);
     expect(res.status).toBe(400);
     // 流水记的是「调用外部服务」这件事。参数错在我们这边就被挡下了，
     // 记进去只会让「失败率」这个指标失真。
@@ -235,23 +232,14 @@ describe("隐私", () => {
 
 describe("契约：流水挂了不能拖垮业务", () => {
   test("没有 log 时路由照常工作", async () => {
-    // 这一台完全没接流水。
-    const bare = await new Promise<Server>((resolve) => {
-      const s = createApp({
-        provider: ttsProxy,
-        store: new FileAudioStore(join(dir, "audio-bare")),
-        publicDir: join(dir, "public"),
-        defaultVoice: "en-US-AvaNeural",
-      }).listen(0, () => resolve(s));
-    });
+    // 这一套完全没接流水。
+    const bare: ServerDeps = {
+      provider: ttsProxy,
+      store: new FileAudioStore(join(dir, "audio-bare")),
+      defaultVoice: "en-US-AvaNeural",
+    };
 
-    const res = await fetch(`http://127.0.0.1:${portOf(bare)}/api/tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "no log here" }),
-    });
-    expect(res.status).toBe(200);
-    await new Promise<void>((r) => bare.close(() => r()));
+    expect((await postTts("no log here", bare)).status).toBe(200);
   });
 
   test("流水写入失败时请求仍然返回 200", async () => {
@@ -260,27 +248,18 @@ describe("契约：流水挂了不能拖垮业务", () => {
     const doomedLog = new OperationLog(doomedDb);
     doomedDb.close();
 
-    const s = await new Promise<Server>((resolve) => {
-      const srv = createApp({
-        provider: ttsProxy,
-        store: new FileAudioStore(join(dir, "audio-doomed")),
-        publicDir: join(dir, "public"),
-        defaultVoice: "en-US-AvaNeural",
-        log: doomedLog,
-      }).listen(0, () => resolve(srv));
-    });
+    const doomed: ServerDeps = {
+      provider: ttsProxy,
+      store: new FileAudioStore(join(dir, "audio-doomed")),
+      defaultVoice: "en-US-AvaNeural",
+      log: doomedLog,
+    };
 
-    const res = await fetch(`http://127.0.0.1:${portOf(s)}/api/tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "log is broken" }),
-    });
+    const res = await postTts("log is broken", doomed);
 
     // 这是整个设计里最重要的一条断言。
     expect(res.status).toBe(200);
-    expect(((await res.json()) as Record<string, unknown>)["key"]).toBeTypeOf("string");
-
-    await new Promise<void>((r) => s.close(() => r()));
+    expect((res.body as Record<string, unknown>)["key"]).toBeTypeOf("string");
   });
 
   test("流水失败会走 onError，不是静默消失", async () => {
@@ -289,54 +268,40 @@ describe("契约：流水挂了不能拖垮业务", () => {
     const doomedLog = new OperationLog(doomedDb, { onError: (e) => seen.push(e) });
     doomedDb.close();
 
-    const s = await new Promise<Server>((resolve) => {
-      const srv = createApp({
-        provider: ttsProxy,
-        store: new FileAudioStore(join(dir, "audio-onerror")),
-        publicDir: join(dir, "public"),
-        defaultVoice: "en-US-AvaNeural",
-        log: doomedLog,
-      }).listen(0, () => resolve(srv));
-    });
+    const doomed: ServerDeps = {
+      provider: ttsProxy,
+      store: new FileAudioStore(join(dir, "audio-onerror")),
+      defaultVoice: "en-US-AvaNeural",
+      log: doomedLog,
+    };
 
-    await fetch(`http://127.0.0.1:${portOf(s)}/api/tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "x" }),
-    });
+    await postTts("x", doomed);
 
     expect(seen.length).toBeGreaterThan(0);
-    await new Promise<void>((r) => s.close(() => r()));
   });
 });
 
 describe("service 与花费（F13 / F14）", () => {
   const RATES: Rates = { ttsPerMillionChars: 16_000_000, scoringPerAudioHour: 1_000_000 };
 
-  let rated: Server;
-  let ratedBase: string;
+  let ratedDeps: ServerDeps;
   let ratedDb: ReturnType<typeof memoryDb>;
   let ratedLog: OperationLog;
 
   beforeAll(async () => {
     ratedDb = memoryDb();
     ratedLog = new OperationLog(ratedDb);
-    rated = await new Promise<Server>((resolve) => {
-      const s2 = createApp({
-        provider: ttsProxy,
-        scoring: scoringProxy,
-        store: new FileAudioStore(join(dir, "audio-rated")),
-        publicDir: join(dir, "public"),
-        defaultVoice: "en-US-AvaNeural",
-        log: ratedLog,
-        rates: RATES,
-      }).listen(0, () => resolve(s2));
-    });
-    ratedBase = `http://127.0.0.1:${portOf(rated)}`;
+    ratedDeps = {
+      provider: ttsProxy,
+      scoring: scoringProxy,
+      store: new FileAudioStore(join(dir, "audio-rated")),
+      defaultVoice: "en-US-AvaNeural",
+      log: ratedLog,
+      rates: RATES,
+    };
   });
 
   afterAll(async () => {
-    await new Promise<void>((r) => rated.close(() => r()));
     ratedDb.close();
   });
 
@@ -347,19 +312,17 @@ describe("service 与花费（F13 / F14）", () => {
   const ratedRows = () =>
     ratedDb.prepare("SELECT * FROM operations ORDER BY id").all() as Array<Record<string, unknown>>;
 
-  const ratedTts = (text: string) =>
-    fetch(`${ratedBase}/api/tts`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
+  const ratedTts = async (text: string): Promise<JsonResult> =>
+    (await ttsHandler({ raw: JSON.stringify({ text }) }, ratedDeps)) as JsonResult;
 
-  const ratedAssess = (pcm: Float32Array, reference = "hello world") =>
-    fetch(`${ratedBase}/api/assess?reference=${encodeURIComponent(reference)}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/octet-stream" },
-      body: Buffer.from(pcm.buffer),
-    });
+  const ratedAssess = async (
+    pcm: Float32Array,
+    reference = "hello world",
+  ): Promise<JsonResult> =>
+    (await assessHandler(
+      { query: { reference }, body: Buffer.from(pcm.buffer) },
+      ratedDeps,
+    )) as JsonResult;
 
   describe("service 标记", () => {
     test("TTS 路由记 tts", async () => {
@@ -418,7 +381,7 @@ describe("service 与花费（F13 / F14）", () => {
       // 首尾静音没有送出去，不该计费。这是最容易记错的一条：
       // 直接用上传的采样数会把静音也算进账单。
       const res = await ratedAssess(withSilence(1.5, 2, 1.5)); // 上传 5 秒，实际约 2 秒
-      const data = (await res.json()) as Record<string, unknown>;
+      const data = res.body as Record<string, unknown>;
       const assessedMs = Number(data["assessedMs"]);
       expect(assessedMs).toBeLessThan(3000); // 确认真的被修剪了
 

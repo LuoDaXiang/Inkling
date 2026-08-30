@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>M3 结果区预览 — 对照 M2 截图</title>
+  </head>
+  <body>
+    <!--
+      **开发用的对照页，不进打包产物。**
+
+      Forge 的渲染层只有 `index.html` 一个入口，所以这一页只在
+      `npm run dev` 的 Vite dev server 下存在：http://localhost:5173/preview.html
+
+      它存在的唯一理由是 M3.8 的验收：「对照物是 M2.5-pre 存的截图，
+      肉眼比对一致才算过」。而真实界面要录音才出得来结果区——
+      一次真实录音不可复现，没法当对照物。这一页用**和 M2 存档同一份
+      fixture** 渲染 React 版的结果区，两张图才能逐块比。
+    -->
+    <div id="root"></div>
+    <script type="module" src="/src/renderer/preview.tsx"></script>
+  </body>
+</html>

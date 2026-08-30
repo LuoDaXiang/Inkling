@@ -1,5 +1,5 @@
 /**
- * 浏览器录音层。
+ * 录音层。
  *
  * **这一层刻意做得很薄，因为它测不了。** 它只做三件事：
  *   1. 开麦克风，把 Float32 采样一块块收下来（每块必须复制）
@@ -13,9 +13,15 @@
  * WebM 容器 + Opus 编码，而评分接口只收 WAV 或 OGG。编码对得上
  * 但容器不对，直接上传必然被拒。参考实现因此必须再引一个几十兆的
  * 转码库；用 AudioWorklet 直接取 PCM，源头就是对的格式。
+ *
+ * ## M3：从 `public/recorder.js` 搬过来，加了类型
+ *
+ * 逻辑一行没改。`tests/contract-consistency.test.ts` 的 import 指向这里——
+ * 它是唯一守着「客户端那份采样率常量」的东西，而变异测试证明过：
+ * 改客户端那份常量**红 0 条**。所以这条 import 必须跟着搬，不能断。
  */
 
-const TARGET_SAMPLE_RATE = 16000;
+export const TARGET_SAMPLE_RATE = 16000;
 
 /** AudioWorklet 处理器。它跑在音频线程里，只负责把采样搬到主线程。 */
 const WORKLET_SOURCE = `
@@ -32,28 +38,52 @@ class TapProcessor extends AudioWorkletProcessor {
 registerProcessor("tap", TapProcessor);
 `;
 
+export type RecorderEvent =
+  | { type: "start" }
+  | { type: "granted" }
+  | { type: "chunk"; samples: number }
+  | { type: "denied" }
+  | { type: "error" };
+
+export interface RecorderSupport {
+  ok: boolean;
+  reason?: string;
+}
+
+export interface CaptureConstraints {
+  echoCancellation?: boolean;
+  noiseSuppression?: boolean;
+  autoGainControl?: boolean;
+}
+
 export class Recorder {
-  constructor({ onEvent }) {
+  private readonly onEvent: (event: RecorderEvent) => void;
+  private chunks: Float32Array[] = [];
+  private context: AudioContext | null = null;
+  private stream: MediaStream | null = null;
+  private node: AudioWorkletNode | null = null;
+
+  constructor({ onEvent }: { onEvent: (event: RecorderEvent) => void }) {
     this.onEvent = onEvent;
-    this.chunks = [];
-    this.context = null;
-    this.stream = null;
-    this.node = null;
   }
 
   /**
-   * 浏览器支持检查。
+   * 能不能录音。
    *
    * Firefox 会在连接不同采样率的节点时报错，且忽略 getUserMedia 的
    * sampleRate 约束——所以 Stage 0 明确不支持它。与其让用户录完
    * 才发现分数不对，不如一开始就说清楚。见 docs/decisions.md 0031。
+   *
+   * Electron 的渲染层是 Chromium，所以这三条检查在打包后永远通过。
+   * **留着不是浪费**：`npm run dev:http` 那条路仍然跑在真实浏览器里，
+   * 而删掉一条只在某个入口才可能触发的检查，是把已知问题重新变成未知问题。
    */
-  static checkSupport() {
+  static checkSupport(): RecorderSupport {
     if (!navigator.mediaDevices?.getUserMedia) {
-      return { ok: false, reason: "这个浏览器不支持录音。" };
+      return { ok: false, reason: "这个环境不支持录音。" };
     }
     if (typeof AudioWorkletNode === "undefined") {
-      return { ok: false, reason: "这个浏览器不支持 AudioWorklet，无法录音。" };
+      return { ok: false, reason: "这个环境不支持 AudioWorklet，无法录音。" };
     }
     if (navigator.userAgent.includes("Firefox")) {
       return {
@@ -64,7 +94,12 @@ export class Recorder {
     return { ok: true };
   }
 
-  async start(constraints) {
+  /** 当前正在录的这条轨，用来回读三个采集开关（[C27]）。 */
+  get track(): MediaStreamTrack | null {
+    return this.stream?.getAudioTracks()[0] ?? null;
+  }
+
+  async start(constraints: CaptureConstraints): Promise<void> {
     this.chunks = [];
     this.onEvent({ type: "start" });
 
@@ -74,7 +109,8 @@ export class Recorder {
       });
     } catch (err) {
       // NotAllowedError 是用户点了拒绝；其余（设备被占用、没有麦克风）算错误。
-      this.onEvent({ type: err?.name === "NotAllowedError" ? "denied" : "error" });
+      const name = (err as { name?: string } | null)?.name;
+      this.onEvent({ type: name === "NotAllowedError" ? "denied" : "error" });
       return;
     }
 
@@ -95,7 +131,7 @@ export class Recorder {
       URL.revokeObjectURL(url);
 
       this.node = new AudioWorkletNode(this.context, "tap");
-      this.node.port.onmessage = (event) => {
+      this.node.port.onmessage = (event: MessageEvent<Float32Array>) => {
         this.chunks.push(event.data);
         this.onEvent({ type: "chunk", samples: event.data.length });
       };
@@ -110,13 +146,13 @@ export class Recorder {
   }
 
   /** 停止并释放麦克风。返回收集到的采样块。 */
-  async stop() {
+  async stop(): Promise<Float32Array[]> {
     const chunks = this.chunks;
     await this.cleanup();
     return chunks;
   }
 
-  async cancel() {
+  async cancel(): Promise<void> {
     this.chunks = [];
     await this.cleanup();
   }
@@ -125,9 +161,9 @@ export class Recorder {
    * 释放麦克风。
    *
    * 必须逐条 stop 每个 track——只关 AudioContext 的话，
-   * 浏览器地址栏的录音红点会一直亮着，用户会以为在被偷听。
+   * 系统的录音指示灯会一直亮着，用户会以为在被偷听。
    */
-  async cleanup() {
+  async cleanup(): Promise<void> {
     if (this.node) {
       this.node.port.onmessage = null;
       this.node.disconnect();
@@ -143,5 +179,3 @@ export class Recorder {
     }
   }
 }
-
-export { TARGET_SAMPLE_RATE };

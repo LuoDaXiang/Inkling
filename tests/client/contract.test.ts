@@ -7,7 +7,7 @@ import {
   captureFlagsFrom,
   loadConfig,
   newClientRequestId,
-} from "../../public/contract.js";
+} from "@renderer/lib/contract";
 
 /**
  * 客户端契约层 —— 契约 §8 的七条承诺，测试清单 #30、#36–#39 的可测部分。
@@ -22,6 +22,17 @@ import {
  *
  * 界面是草稿，会重画。但「版本不匹配要停」「缺席不能当成 false」
  * 「id 不能做形状假设」这些由契约决定，重画多少次都不变。
+ *
+ * ## M3.9：import 改指 `src/renderer/lib/contract.ts`，只有一条随传输退役
+ *
+ * `loadConfig` 的注入点从 `fetch` 换成 `call`（一个返回 `{ status, body }`
+ * 的函数，正是 IPC 那八个频道的形状），所以下面那个假响应助手换了形状。
+ * **其余四个函数的用例一个字没改**——它们本来就和传输无关。
+ *
+ * 退役的只有一条：「响应不是合法 JSON → ContractError」。IPC 走
+ * structured clone，没有解析这一步，那条分支**在新传输下不可能发生**。
+ * 留着一条永远走不到的用例，比删掉它更糟——它会让人以为那个失败模式
+ * 有人守着。接替它的是「传输本身抛错 → 明确报错」，那一条在新传输下是真的。
  */
 
 /** 一份合法的 config。各用例在它上面改。 */
@@ -37,26 +48,22 @@ const validConfig = (overrides: Record<string, unknown> = {}): Record<string, un
   ...overrides,
 });
 
-/** 假 fetch：返回给定的响应。 */
-const fetchReturning = (
-  body: unknown,
-  init: { ok?: boolean; status?: number; malformed?: boolean } = {},
-) => {
-  const ok = init.ok ?? true;
-  return async (): Promise<Response> =>
-    ({
-      ok,
-      status: init.status ?? (ok ? 200 : 500),
-      json: async () => {
-        if (init.malformed) throw new SyntaxError("bad json");
-        return body;
-      },
-    }) as unknown as Response;
+/** 假传输：返回给定的结果。形状和 IPC 那八个频道一致。 */
+const callReturning =
+  (body: unknown, init: { status?: number } = {}) =>
+  async (): Promise<{ status: number; body: unknown }> => ({
+    status: init.status ?? 200,
+    body,
+  });
+
+/** 传输本身抛错——网络断、主进程没起来。 */
+const callThrowing = (message: string) => async (): Promise<never> => {
+  throw new Error(message);
 };
 
 describe("#30 loadConfig 与版本校验 [C3][C4]", () => {
   test("正常拿到配置", async () => {
-    const config = await loadConfig({ fetch: fetchReturning(validConfig()) });
+    const config = await loadConfig({ call: callReturning(validConfig()) });
     expect(config.recordingSampleRate).toBe(16000);
     expect(config.scoringAvailable).toBe(true);
   });
@@ -64,7 +71,7 @@ describe("#30 loadConfig 与版本校验 [C3][C4]", () => {
   test("版本不匹配 → 抛 ContractError，且消息说得清怎么办 [C4]", async () => {
     // 「客户端与服务端同版本发布」这个假设一旦不成立，必须**明确报错并停止**，
     // 不能继续以诡异的方式工作——那正是这个字段存在的全部理由。
-    const call = loadConfig({ fetch: fetchReturning(validConfig({ contractVersion: "v1" })) });
+    const call = loadConfig({ call: callReturning(validConfig({ contractVersion: "v1" })) });
     await expect(call).rejects.toThrow(ContractError);
     await expect(call).rejects.toThrow(/契约版本不匹配/);
   });
@@ -72,13 +79,13 @@ describe("#30 loadConfig 与版本校验 [C3][C4]", () => {
   test("contractVersion 缺席也算不匹配", async () => {
     const broken = validConfig();
     delete broken["contractVersion"];
-    await expect(loadConfig({ fetch: fetchReturning(broken) })).rejects.toThrow(ContractError);
+    await expect(loadConfig({ call: callReturning(broken) })).rejects.toThrow(ContractError);
   });
 
   test("对多出来的字段宽容——加字段不是破坏性变更 [§15]", async () => {
     // 严格校验会让服务端加一个字段就打死所有老客户端。
     const config = await loadConfig({
-      fetch: fetchReturning(validConfig({ futureFeature: true, anotherOne: "x" })),
+      call: callReturning(validConfig({ futureFeature: true, anotherOne: "x" })),
     });
     expect(config.recordingSampleRate).toBe(16000);
   });
@@ -95,7 +102,7 @@ describe("#30 loadConfig 与版本校验 [C3][C4]", () => {
       const broken = validConfig();
       delete broken[missing];
       await expect(
-        loadConfig({ fetch: fetchReturning(broken) }),
+        loadConfig({ call: callReturning(broken) }),
         missing,
       ).rejects.toThrow(new RegExp(missing));
     }
@@ -104,7 +111,7 @@ describe("#30 loadConfig 与版本校验 [C3][C4]", () => {
   test("数值不是正整数 → 抛", async () => {
     for (const bad of [0, -1, 1.5, NaN, Infinity, "16000", null]) {
       await expect(
-        loadConfig({ fetch: fetchReturning(validConfig({ recordingSampleRate: bad })) }),
+        loadConfig({ call: callReturning(validConfig({ recordingSampleRate: bad })) }),
         String(bad),
       ).rejects.toThrow(ContractError);
     }
@@ -113,41 +120,44 @@ describe("#30 loadConfig 与版本校验 [C3][C4]", () => {
   test("scoringAvailable 不是布尔 → 抛", async () => {
     for (const bad of ["true", 1, null, undefined]) {
       await expect(
-        loadConfig({ fetch: fetchReturning(validConfig({ scoringAvailable: bad })) }),
+        loadConfig({ call: callReturning(validConfig({ scoringAvailable: bad })) }),
         String(bad),
       ).rejects.toThrow(ContractError);
     }
   });
 
-  test("HTTP 不是 200 → 抛，且不是 ContractError", async () => {
-    // 网络/服务端故障不是契约违反，两者的处置不同：一个是刷新重试，
-    // 一个是版本对不上必须重新部署。
-    const call = loadConfig({ fetch: fetchReturning(null, { ok: false, status: 503 }) });
-    await expect(call).rejects.toThrow(/HTTP 503/);
+  test("状态码不是 200 → 抛，且不是 ContractError", async () => {
+    // 传输/主进程故障不是契约违反，两者的处置不同：一个是重试，
+    // 一个是版本对不上必须重新构建。
+    const call = loadConfig({ call: callReturning(null, { status: 503 }) });
+    await expect(call).rejects.toThrow(/状态码 503/);
     await expect(call).rejects.not.toThrow(ContractError);
   });
 
-  test("响应不是合法 JSON → ContractError", async () => {
-    await expect(
-      loadConfig({ fetch: fetchReturning(null, { malformed: true }) }),
-    ).rejects.toThrow(ContractError);
+  test("传输本身抛错 → 明确报错，且不是 ContractError", async () => {
+    // 接替原来那条「响应不是合法 JSON → ContractError」：IPC 走
+    // structured clone，没有解析这一步，那个失败模式在新传输下不存在。
+    // 能发生的是主进程没起来 / 频道没注册，那属于传输故障。
+    const call = loadConfig({ call: callThrowing("主进程没有响应") });
+    await expect(call).rejects.toThrow(/取不到配置/);
+    await expect(call).rejects.not.toThrow(ContractError);
   });
 
   test("响应是数组或 null → ContractError", async () => {
     for (const bad of [null, [], "text", 42]) {
-      await expect(loadConfig({ fetch: fetchReturning(bad) }), String(bad)).rejects.toThrow(
+      await expect(loadConfig({ call: callReturning(bad) }), String(bad)).rejects.toThrow(
         ContractError,
       );
     }
   });
 
-  test("fetch 本身抛（断网）→ 报网络错误，不是契约错误", async () => {
+  test("传输抛的是 TypeError 也照样归成传输故障，不是契约错误", async () => {
     const call = loadConfig({
-      fetch: async () => {
-        throw new TypeError("Failed to fetch");
+      call: async () => {
+        throw new TypeError("channel closed");
       },
     });
-    await expect(call).rejects.toThrow(/取不到服务端配置/);
+    await expect(call).rejects.toThrow(/取不到配置/);
     await expect(call).rejects.not.toThrow(ContractError);
   });
 });

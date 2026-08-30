@@ -4,7 +4,15 @@ import type { Server } from "node:http";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createApp, RECORDING_SAMPLE_RATE } from "@/http/server";
+import {
+  getRecordingAudio,
+  postAssess,
+  postMaterials,
+  type BytesResult,
+  type JsonResult,
+  type ServerDeps,
+} from "@/http/server";
+import { RECORDING_SAMPLE_RATE } from "@/http/contract";
 import type { ScoringProvider } from "@/providers/scoring/types";
 import { parseWav } from "@/core/audio/wav";
 import { FileAudioStore } from "@/storage/file-audio-store";
@@ -32,14 +40,12 @@ let dir: string;
 let db: ReturnType<typeof memoryDb>;
 let recordings: RecordingStore;
 let log: OperationLog;
-let server: Server;
-let base: string;
+let deps: ServerDeps;
 
 /** 库已经关掉的那一台，用来制造落库失败。 */
 let brokenDb: ReturnType<typeof memoryDb>;
 let brokenRecordings: RecordingStore;
-let broken: Server;
-let brokenBase: string;
+let brokenDeps: ServerDeps;
 
 let current: FakeScoringProvider;
 const proxy: ScoringProvider = {
@@ -53,46 +59,34 @@ const use = (options: ConstructorParameters<typeof FakeScoringProvider>[0]): Fak
   return current;
 };
 
-const portOf = (s: Server): number => (s.address() as AddressInfo).port;
-const listen = (deps: Parameters<typeof createApp>[0]): Promise<Server> =>
-  new Promise((resolve) => {
-    const s = createApp(deps).listen(0, () => resolve(s));
-  });
-
 beforeAll(async () => {
   dir = await mkdtemp(join(tmpdir(), "inkling-persist-"));
   db = memoryDb();
   recordings = new RecordingStore(join(dir, "recordings"));
   log = new OperationLog(db);
-  server = await listen({
+  deps = {
     provider: new FakeTtsProvider({}),
     scoring: proxy,
     store: new FileAudioStore(join(dir, "audio")),
-    publicDir: join(dir, "public"),
     defaultVoice: "en-US-AvaNeural",
     db,
     recordings,
     log,
-  });
-  base = `http://127.0.0.1:${portOf(server)}`;
+  };
 
   brokenDb = memoryDb();
   brokenRecordings = new RecordingStore(join(dir, "broken-recordings"));
-  broken = await listen({
+  brokenDeps = {
     provider: new FakeTtsProvider({}),
     scoring: proxy,
     store: new FileAudioStore(join(dir, "broken-audio")),
-    publicDir: join(dir, "public"),
     defaultVoice: "en-US-AvaNeural",
     db: brokenDb,
     recordings: brokenRecordings,
-  });
-  brokenBase = `http://127.0.0.1:${portOf(broken)}`;
+  };
 });
 
 afterAll(async () => {
-  await new Promise<void>((r) => server.close(() => r()));
-  await new Promise<void>((r) => broken.close(() => r()));
   try {
     db.close();
   } catch {
@@ -118,25 +112,41 @@ const speech = (seconds: number): Float32Array =>
   );
 
 /** 建一份材料，返回第一句的 id。 */
-async function makeSentence(text = "The quick brown fox.", at = base): Promise<number> {
-  const res = await fetch(`${at}/api/materials`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title: "t", source: "paste", text }),
-  });
-  const made = (await res.json()) as { sentences: Array<{ id: number }> };
+async function makeSentence(text = "The quick brown fox.", at?: ServerDeps): Promise<number> {
+  const result = (await postMaterials(
+    { raw: JSON.stringify({ title: "t", source: "paste", text }) },
+    at ?? deps,
+  )) as JsonResult;
+  const made = result.body as { sentences: Array<{ id: number }> };
   return made.sentences[0]!.id;
 }
 
-const assess = (query: string, pcm = speech(2), at = base): Promise<Response> =>
-  fetch(`${at}/api/assess?${query}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/octet-stream" },
-    body: Buffer.from(pcm.buffer),
-  });
+/**
+ * 评分。仍然收一条 query string，因为用例表达的就是「客户端发了这几个参数」。
+ * 这里做的解析和适配器里那一行是同一件事（M2.5）。
+ */
+const assess = async (
+  query: string,
+  pcm = speech(2),
+  at?: ServerDeps,
+): Promise<JsonResult> => {
+  const params = new URLSearchParams(query);
+  const q: Record<string, string | undefined> = {};
+  for (const [k, v] of params) q[k] = v;
+  return (await postAssess({ query: q, body: Buffer.from(pcm.buffer) }, at ?? deps)) as JsonResult;
+};
 
-const bodyOf = async (res: Response): Promise<Record<string, unknown>> =>
-  (await res.json()) as Record<string, unknown>;
+const bodyOf = async (res: JsonResult): Promise<Record<string, unknown>> =>
+  res.body as Record<string, unknown>;
+
+/**
+ * 回放。`audioUrl` 是 `/api/recordings/{id}/audio`，这里把 id 抠出来直接调
+ * handler——断言的仍然是同一组 header 与同一段字节。
+ */
+const playback = async (audioUrl: string, at?: ServerDeps): Promise<BytesResult | JsonResult> => {
+  const id = audioUrl.split("/")[3] ?? "";
+  return getRecordingAudio({ id }, at ?? deps);
+};
 
 /**
  * 在「坏库」那一台上建一条句子，然后砍掉落库要写的三张表。
@@ -147,7 +157,7 @@ const bodyOf = async (res: Response): Promise<Record<string, unknown>> =>
 async function brokenSentence(): Promise<number> {
   brokenDb.exec("DROP TABLE IF EXISTS phoneme_score");
   brokenDb.exec("DROP TABLE IF EXISTS assessment");
-  const id = await makeSentence("Broken db sentence.", brokenBase);
+  const id = await makeSentence("Broken db sentence.", brokenDeps);
   brokenDb.exec("DROP TABLE IF EXISTS recording");
   return id;
 }
@@ -331,7 +341,7 @@ describe("#32 persisted 的三态 [C32]", () => {
     // [C35] 评分已经成功、钱已经花了，把结果扔掉是第二次伤害。
     // 但静默吞掉也不行——练习记录丢一行是用户的数据没了。
     const id = await brokenSentence();
-    const res = await assess(`sentenceId=${id}`, speech(2), brokenBase);
+    const res = await assess(`sentenceId=${id}`, speech(2), brokenDeps);
     expect(res.status).toBe(200);
 
     const body = await bodyOf(res);
@@ -348,7 +358,7 @@ describe("#32 persisted 的三态 [C32]", () => {
     // 先写文件后写库，所以失败态永远是「孤儿文件」——浪费磁盘。
     // 反过来是「悬空引用」——记录看起来正常，读音频 404。宁可浪费磁盘。
     const id = await brokenSentence();
-    expect((await assess(`sentenceId=${id}`, speech(2), brokenBase)).status).toBe(200);
+    expect((await assess(`sentenceId=${id}`, speech(2), brokenDeps)).status).toBe(200);
 
     const left = await readdir(join(dir, "broken-recordings"));
     expect(left.filter((n) => n.endsWith(".wav")).length).toBeGreaterThan(0);
@@ -370,17 +380,17 @@ describe("#19 #20 #37 录音落盘与回放", () => {
     expect(keys[0]).not.toBe(keys[1]);
 
     for (const body of [first, second]) {
-      const res = await fetch(`${base}${String(body["audioUrl"])}`);
+      const res = (await playback(String(body["audioUrl"]))) as BytesResult;
       expect(res.status).toBe(200);
-      expect(res.headers.get("content-type")).toBe("audio/wav");
+      expect(res.headers["Content-Type"]).toBe("audio/wav");
     }
   });
 
   test("回放带 immutable [C22][C37]", async () => {
     const id = await makeSentence();
     const body = await bodyOf(await assess(`sentenceId=${id}`));
-    const res = await fetch(`${base}${String(body["audioUrl"])}`);
-    expect(res.headers.get("cache-control")).toMatch(/immutable/);
+    const res = (await playback(String(body["audioUrl"]))) as BytesResult;
+    expect(res.headers["Cache-Control"]).toMatch(/immutable/);
   });
 
   test("落盘的 WAV 时长等于 assessedMs —— 存的是修剪后那一份 [C39]", async () => {
@@ -388,8 +398,8 @@ describe("#19 #20 #37 录音落盘与回放", () => {
     // 也是计费依据的字节。
     const id = await makeSentence();
     const body = await bodyOf(await assess(`sentenceId=${id}`, speech(2)));
-    const res = await fetch(`${base}${String(body["audioUrl"])}`);
-    const wav = new Uint8Array(await res.arrayBuffer());
+    const res = (await playback(String(body["audioUrl"]))) as BytesResult;
+    const wav = res.bytes;
 
     const info = parseWav(wav);
     expect(Math.round(info.duration * 1000)).toBe(body["assessedMs"]);
@@ -412,8 +422,8 @@ describe("#19 #20 #37 录音落盘与回放", () => {
   });
 
   test("录音 id 不是正整数 → 400；不存在 → 404 [C57]", async () => {
-    expect((await fetch(`${base}/api/recordings/abc/audio`)).status).toBe(400);
-    expect((await fetch(`${base}/api/recordings/999999/audio`)).status).toBe(404);
+    expect((await getRecordingAudio({ id: "abc" }, deps)).status).toBe(400);
+    expect((await getRecordingAudio({ id: "999999" }, deps)).status).toBe(404);
   });
 });
 
@@ -480,7 +490,7 @@ describe("#10 响应里不出现 null [C43]", () => {
     for (const [name, options] of cases) {
       use(options);
       const res = await assess(`sentenceId=${id}`);
-      expect(await res.text(), name).not.toContain("null");
+      expect(JSON.stringify(res.body), name).not.toContain("null");
     }
   });
 

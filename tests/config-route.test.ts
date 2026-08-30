@@ -1,10 +1,8 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import type { AddressInfo } from "node:net";
-import type { Server } from "node:http";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { createApp } from "@/http/server";
+import { getConfig, type JsonResult, type ServerDeps } from "@/http/server";
 import { FileAudioStore } from "@/storage/file-audio-store";
 import { FakeTtsProvider } from "./helpers/fake-provider";
 import { FakeScoringProvider } from "./helpers/fake-scoring-provider";
@@ -27,6 +25,16 @@ import { FakeScoringProvider } from "./helpers/fake-scoring-provider";
  * 那里比的是客户端和服务端两份独立定义，不是和一个写死的字面量比。
  *
  * 唯一的例外是 `contractVersion`——它不是可调的常量，是契约标识本身（C1/C4）。
+ *
+ * ## M2.5：驱动方式换了，断言一条没换
+ *
+ * 此前这些用例靠 `createApp(deps)` 起一个真端口加真实 `fetch` 驱动。
+ * 现在直接 `await getConfig(deps)`——**同一个函数，同一组断言**，
+ * 只是不再经过一个 socket。这正是 M2.5 的全部目的：M3 换成 IPC 时，
+ * 下面这些用例一行都不用动。
+ *
+ * M3 之后连那条 405 也退役了：它守的是 HTTP 路由分派，而 HTTP 没了。
+ * 见文件末尾那段说明。
  */
 
 /** 契约 §4 规定的数值字段，一个不能少。 */
@@ -40,38 +48,32 @@ const NUMERIC_FIELDS = [
 ] as const;
 
 let dir: string;
-let withScoring: Server;
-let withoutScoring: Server;
-
-const portOf = (s: Server): number => (s.address() as AddressInfo).port;
-const listen = (deps: Parameters<typeof createApp>[0]): Promise<Server> =>
-  new Promise((resolve) => {
-    const s = createApp(deps).listen(0, () => resolve(s));
-  });
+let withScoring: ServerDeps;
+let withoutScoring: ServerDeps;
 
 beforeAll(async () => {
   dir = await mkdtemp(join(tmpdir(), "inkling-config-"));
-  const base = {
+  const base: ServerDeps = {
     provider: new FakeTtsProvider({}),
     store: new FileAudioStore(join(dir, "audio")),
-    publicDir: join(dir, "public"),
     defaultVoice: "en-US-AvaNeural",
   };
-  withScoring = await listen({ scoring: new FakeScoringProvider(), ...base });
-  withoutScoring = await listen(base);
+  withScoring = Object.assign({}, base, { scoring: new FakeScoringProvider() });
+  withoutScoring = base;
 });
 
 afterAll(async () => {
-  await new Promise<void>((r) => withScoring.close(() => r()));
-  await new Promise<void>((r) => withoutScoring.close(() => r()));
   await rm(dir, { recursive: true, force: true });
 });
 
-const get = (server: Server): Promise<Response> =>
-  fetch(`http://127.0.0.1:${portOf(server)}/api/config`);
+const get = async (deps: ServerDeps): Promise<JsonResult> =>
+  (await getConfig(deps)) as JsonResult;
 
-const body = async (server: Server): Promise<Record<string, unknown>> =>
-  (await (await get(server)).json()) as Record<string, unknown>;
+const body = async (deps: ServerDeps): Promise<Record<string, unknown>> =>
+  (await get(deps)).body as Record<string, unknown>;
+
+/** 序列化之后的样子。[C43] 那两条断言的是「线上真的没有 null」。 */
+const text = async (deps: ServerDeps): Promise<string> => JSON.stringify((await get(deps)).body);
 
 describe("#1 契约版本与缓存头", () => {
   test("200", async () => {
@@ -87,13 +89,14 @@ describe("#1 契约版本与缓存头", () => {
   test("响应头是 Cache-Control: no-store [C6]", async () => {
     // 这份 config 的全部目的是消灭「两边不一致」。
     // 让它自己被缓存住是自相矛盾——客户端会拿着上一版的常量跑。
-    const res = await get(withScoring);
-    expect(res.headers.get("cache-control")).toBe("no-store");
+    expect((await get(withScoring)).headers?.["Cache-Control"]).toBe("no-store");
   });
 
-  test("Content-Type 是 JSON", async () => {
-    const res = await get(withScoring);
-    expect(res.headers.get("content-type")).toMatch(/application\/json/);
+  test("是 JSON 结果，不是二进制", async () => {
+    // Content-Type 由适配器统一加（`send()` 里那一处），handler 只表明
+    // 自己产出的是 JSON 而不是字节流。断言这一点等价于此前断言
+    // `content-type: application/json`，而且不依赖传输。
+    expect("bytes" in (await getConfig(withScoring))).toBe(false);
   });
 });
 
@@ -130,28 +133,29 @@ describe("响应形状", () => {
   });
 
   test("响应里不出现 null [C43]", async () => {
-    // HTTP 层用「字段不出现」表达缺席，绝不发 null。
-    const raw = await (await get(withScoring)).text();
-    expect(raw).not.toContain("null");
+    // 传输层用「字段不出现」表达缺席，绝不发 null。
+    expect(await text(withScoring)).not.toContain("null");
   });
 
   test("没配评分时也不出现 null", async () => {
-    const raw = await (await get(withoutScoring)).text();
-    expect(raw).not.toContain("null");
+    expect(await text(withoutScoring)).not.toContain("null");
   });
 });
 
 describe("无副作用、幂等", () => {
   test("连调两次响应完全相同", async () => {
-    const first = await (await get(withScoring)).text();
-    const second = await (await get(withScoring)).text();
-    expect(second).toBe(first);
+    expect(await text(withScoring)).toBe(await text(withScoring));
   });
 
-  test("POST /api/config 不被当成路由，落到 405", async () => {
-    const res = await fetch(`http://127.0.0.1:${portOf(withScoring)}/api/config`, {
-      method: "POST",
-    });
-    expect(res.status).toBe(405);
-  });
+  /*
+   * 原本这里还有一条「POST /api/config 落到 405」。
+   *
+   * 它测的是 **HTTP 路由分派**，而 M3 把 HTTP 适配器整个删了
+   * （禁区 #3 / #4：桌面应用不开无鉴权端口，也不让两套入口并存）。
+   * IPC 没有「方法」这个维度——一个频道就是一个 handler，调不到的频道
+   * 会在 `ipcRenderer.invoke` 那里直接报 "No handler registered"。
+   *
+   * 所以这一条不是被删掉，是**它守的那个东西不存在了**。
+   * 这属于计划里说的「唯一一次允许掉测试」：随传输一起退役。
+   */
 });

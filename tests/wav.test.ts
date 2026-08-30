@@ -179,6 +179,7 @@ describe("assertAssessable", () => {
     channels: 1,
     bitsPerSample: 16,
     dataBytes: seconds * 32000,
+    dataOffset: 44,
     duration: seconds,
   });
 

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<title>M2 定型快照 — 三维显示 + 音高曲线</title>
+<link rel="stylesheet" href="./frozen/app.css">
+<style>
+  /* 只有这一页需要的东西。产品样式一律来自上面那份冻结的 app.css。 */
+  .caption { font-size: 13px; color: var(--ink-faint); margin: 0; }
+  .combo-label {
+    font: 12px/1.6 ui-monospace, Menlo, monospace; color: var(--ink-faint);
+    margin: 0 0 2px;
+  }
+  .combo { margin-bottom: 14px; }
+</style>
+
+<!--
+  M2 定型快照（迁移计划 M2.5-pre）。
+
+  **这是 M3 的对照物。** M3 的铁律是「不顺带做任何功能改动，界面长得和
+  M2 的截图一模一样才算成功」——那就得有一张说得清「一模一样」指的是什么的图。
+
+  它原本引用的是**真的那两个文件**：`public/app.css` 和 `public/present.js`。
+  M3 把 `public/` 删了（决定逻辑搬进了 `src/renderer/lib/present.ts`），
+  所以现在引用的是 `./frozen/` 下的冻结副本。
+
+  判断在这一步反转了：本体还在的时候，复制就是让存档开始撒谎；
+  本体没了之后，冻结才是让存档还打得开。冻结副本不要再改。
+
+  它和真实界面唯一的差别是**数据来自下面这份写死的 fixture**，
+  不是一次真实的评分。这是刻意的：截图需要可复现，一次真实录音不可复现。
+-->
+
+<main>
+  <h1>M2 定型快照</h1>
+  <p class="caption">
+    逐词三层标记（decisions 0045）＋ 音高曲线（M1.6）。样式与决定逻辑来自
+    <code>frozen/</code> 下的冻结副本（M3 删掉 <code>public/</code> 之前的最后状态），
+    数据是写死的 fixture。
+  </p>
+
+  <section>
+    <h2>逐词三层标记 —— 三个维度的 8 种组合</h2>
+    <p class="caption">
+      底色 = <code>errorType</code> ＋ <code>accuracy</code>；下划线粗细 =
+      <code>monotone</code> 的三档；右上角标 = <code>breakError</code>。
+      三层各管一个字段，互不覆盖 —— 悬停看音素明细。
+    </p>
+    <div id="combos"></div>
+  </section>
+
+  <section>
+    <h2>音高曲线</h2>
+    <p class="caption">范本与录音共用同一条纵轴；<code>null</code> 处断开不连。</p>
+    <div class="pitch-legend">
+      <span><i class="ref"></i> 范本</span>
+      <span><i class="mine"></i> 你的录音</span>
+      <span id="pitchRange"></span>
+    </div>
+    <div class="pitch-wrap"><canvas id="pitchCanvas"></canvas></div>
+  </section>
+
+  <section>
+    <h2>分数与文案</h2>
+    <div class="scores" id="scores"></div>
+    <p class="note" id="resultNote"></p>
+    <p class="meta" id="resultMeta"></p>
+  </section>
+</main>
+
+<script type="module">
+import { band, phonemeRows, pitchPlot, wordMarks } from "./frozen/present.js";
+
+/* ---- fixture ---- */
+
+const PHONEMES = {
+  think: [
+    { phoneme: "th", accuracy: 22 },
+    { phoneme: "ih", accuracy: 88 },
+    { phoneme: "ng", accuracy: 95 },
+    { phoneme: "k", accuracy: 71 },
+  ],
+  fast: [
+    { phoneme: "f", accuracy: 96 },
+    { phoneme: "ae", accuracy: 74 },
+    { phoneme: "s", accuracy: 91 },
+    { phoneme: "t", accuracy: 58 },
+  ],
+};
+
+/** 三个维度：念错了 / 读得平 / 停顿异常。八种组合各一个词。 */
+const COMBOS = [
+  ["都没有", {}],
+  ["只念错", { wrong: true }],
+  ["只读平", { flat: true }],
+  ["只停顿异常", { broke: true }],
+  ["念错 + 读平", { wrong: true, flat: true }],
+  ["念错 + 停顿", { wrong: true, broke: true }],
+  ["读平 + 停顿", { flat: true, broke: true }],
+  ["三样都占", { wrong: true, flat: true, broke: true }],
+];
+
+function fixtureWord(opts) {
+  return {
+    word: opts.wrong ? "think" : "fast",
+    accuracy: opts.wrong ? 41 : 92,
+    errorType: opts.wrong ? "Mispronunciation" : "None",
+    phonemes: opts.wrong ? PHONEMES.think : PHONEMES.fast,
+    ...(opts.flat ? { monotone: 0.8 } : {}),
+    ...(opts.broke ? { breakError: "unexpected" } : {}),
+  };
+}
+
+/** 底色的另外两种取值，八种组合里没覆盖到。 */
+const EXTRA = [
+  ["漏读（Omission）", { word: "the", accuracy: 0, errorType: "Omission", phonemes: [] }],
+  ["多读（Insertion）", { word: "uh", accuracy: 0, errorType: "Insertion", phonemes: [] }],
+  [
+    "只给单值枚举的 provider：Monotone 折进第二层，不进底色",
+    { word: "over", accuracy: 91, errorType: "Monotone", phonemes: [] },
+  ],
+];
+
+/* ---- 渲染，逻辑与 index.html 的 render() 同形 ---- */
+
+const BASE_TEXT = {
+  mispronounced: "念得不准",
+  omission: "漏读了",
+  insertion: "多读了",
+  ok: null,
+};
+const FLAT_TEXT = [null, "读得略平", "读得偏平", "读得很平"];
+const BRK_TEXT = { unexpected: "这里不该停", missing: "这里该停一下" };
+
+function describeMarks(m) {
+  const parts = [
+    BASE_TEXT[m.base],
+    FLAT_TEXT[m.monotone.level],
+    m.breakMark ? BRK_TEXT[m.breakMark] : null,
+  ].filter(Boolean);
+  return parts.length === 0 ? "念准了" : parts.join(" · ");
+}
+
+function renderWord(word) {
+  const m = wordMarks(word);
+  const span = document.createElement("span");
+  span.tabIndex = 0;
+
+  const classes = ["word", `base-${m.base}`];
+  if (m.monotone.level > 0) classes.push(`flat-${m.monotone.level}`);
+  if (m.breakMark) {
+    classes.push("brk");
+    span.dataset.brk = m.breakMark === "unexpected" ? "‖" : "·";
+  }
+  span.className = classes.join(" ");
+  span.append(m.word);
+  span.title = describeMarks(m);
+
+  const rows = phonemeRows(word);
+  if (rows.length > 0) {
+    const box = document.createElement("div");
+    box.className = "phonemes";
+    for (const row of rows) {
+      const cell = document.createElement("span");
+      cell.className = "phoneme" + (row.weak ? " weak" : "");
+      cell.innerHTML = `${row.phoneme}<small>${row.band ?? "—"}</small>`;
+      box.appendChild(cell);
+    }
+    span.appendChild(box);
+  }
+  return span;
+}
+
+const combos = document.getElementById("combos");
+for (const [label, opts] of COMBOS) {
+  const block = document.createElement("div");
+  block.className = "combo";
+  const caption = document.createElement("p");
+  caption.className = "combo-label";
+  caption.textContent = label;
+  const row = document.createElement("div");
+  row.className = "words";
+  row.appendChild(renderWord(fixtureWord(opts)));
+  block.append(caption, row);
+  combos.appendChild(block);
+}
+for (const [label, word] of EXTRA) {
+  const block = document.createElement("div");
+  block.className = "combo";
+  const caption = document.createElement("p");
+  caption.className = "combo-label";
+  caption.textContent = label;
+  const row = document.createElement("div");
+  row.className = "words";
+  row.appendChild(renderWord(word));
+  block.append(caption, row);
+  combos.appendChild(block);
+}
+
+/* ---- 音高曲线 ---- */
+
+function contour(baseHz, n, hopMs, gaps) {
+  return {
+    hz: Array.from({ length: n }, (_, i) =>
+      gaps.includes(i) ? null : baseHz + 24 * Math.sin(i / 5) + (i % 3),
+    ),
+    hopMs,
+  };
+}
+
+const plot = pitchPlot({
+  reference: contour(210, 60, 20, [18, 19, 20, 41]),
+  recording: contour(150, 58, 20, [7, 30, 31]),
+  width: 600,
+  height: 120,
+});
+
+const canvas = document.getElementById("pitchCanvas");
+const ratio = window.devicePixelRatio || 1;
+const cssWidth = canvas.clientWidth || 600;
+const cssHeight = canvas.clientHeight || 120;
+canvas.width = Math.round(cssWidth * ratio);
+canvas.height = Math.round(cssHeight * ratio);
+
+const replot = pitchPlot({
+  reference: contour(210, 60, 20, [18, 19, 20, 41]),
+  recording: contour(150, 58, 20, [7, 30, 31]),
+  width: cssWidth,
+  height: cssHeight,
+});
+
+const ctx = canvas.getContext("2d");
+ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+const style = getComputedStyle(document.documentElement);
+const colors = {
+  reference: style.getPropertyValue("--ink-soft").trim() || "#888",
+  recording: style.getPropertyValue("--accent").trim() || "#c60",
+};
+for (const segment of replot.segments) {
+  ctx.strokeStyle = colors[segment.series];
+  ctx.fillStyle = colors[segment.series];
+  ctx.lineWidth = segment.series === "reference" ? 1.5 : 2;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  if (segment.points.length === 1) {
+    const p = segment.points[0];
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, ctx.lineWidth, 0, Math.PI * 2);
+    ctx.fill();
+    continue;
+  }
+  ctx.beginPath();
+  segment.points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+  ctx.stroke();
+}
+document.getElementById("pitchRange").textContent =
+  `${Math.round(replot.minHz)}–${Math.round(replot.maxHz)} Hz`;
+void plot;
+
+/* ---- 分数与文案 ---- */
+
+const scores = { accuracy: 82.1, fluency: 74, prosody: 68.2 };
+const scoresEl = document.getElementById("scores");
+for (const [label, value, hero] of [
+  ["准确度", scores.accuracy, true],
+  ["流利度", scores.fluency, false],
+  ["语调", scores.prosody, false],
+]) {
+  const div = document.createElement("div");
+  div.className = "score" + (hero ? " hero" : "");
+  div.innerHTML = `<b>${value == null ? "—" : band(value)}</b><small>${label}</small>`;
+  scoresEl.appendChild(div);
+}
+
+document.getElementById("resultNote").textContent =
+  "5 个词念得不准，标红的就是——鼠标悬停能看到具体是哪个音素。另有 3 个词读得偏平。";
+document.getElementById("resultMeta").textContent =
+  "识别到  think fast over the lazy dog\n时长    4.62s（掐掉首尾静音 0.28s）\n信噪比  24.5 dB";
+</script>

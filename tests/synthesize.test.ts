@@ -2,6 +2,8 @@ import { describe, test, expect, beforeEach } from "vitest";
 import { synthesize } from "@/core/tts/synthesize";
 import { TtsError } from "@/core/errors";
 import { MemoryAudioStore } from "@/storage/audio-store";
+import { MemoryPitchStore } from "@/storage/pitch-store";
+import { encodeWav } from "@/core/audio/encode-wav";
 import { FakeTtsProvider } from "./helpers/fake-provider";
 
 /**
@@ -228,5 +230,118 @@ describe("synthesize", () => {
       await expect(synthesize(req, deps())).rejects.toThrow();
       expect(store.size).toBe(0);
     });
+  });
+});
+
+describe("参考音高曲线（M1.5）", () => {
+  const SR = 24000;
+
+  /** 一段真的 WAV：假 provider 默认返回的是填 7 的字节，解不出采样。 */
+  function toneWav(hz: number, seconds: number): Uint8Array {
+    const n = Math.round(SR * seconds);
+    const pcm = Int16Array.from({ length: n }, (_, i) =>
+      Math.round(8000 * Math.sin((2 * Math.PI * hz * i) / SR)),
+    );
+    return encodeWav(pcm, { sampleRate: SR });
+  }
+
+  let provider: FakeTtsProvider;
+  let store: MemoryAudioStore;
+  let pitch: MemoryPitchStore;
+
+  beforeEach(() => {
+    provider = new FakeTtsProvider({ maxChars: 100, sampleRate: SR });
+    store = new MemoryAudioStore();
+    pitch = new MemoryPitchStore();
+  });
+
+  const req = { text: "Hello world.", voice: "af_heart" };
+
+  test("合成时算出曲线，并落进 store", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    const result = await synthesize(req, { provider, store, pitch });
+
+    expect(result.pitch).toBeDefined();
+    expect(result.pitch?.hopMs).toBe(20);
+    expect(pitch.calls.put).toBe(1);
+    expect(pitch.size).toBe(1);
+  });
+
+  test("曲线的值是那段音的基频", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    const result = await synthesize(req, { provider, store, pitch });
+
+    const nums = (result.pitch?.hz ?? [])
+      .filter((v): v is number => v !== null)
+      .sort((a, b) => a - b);
+    expect(nums.length).toBeGreaterThan(0);
+    expect(nums[Math.floor(nums.length / 2)] as number).toBeGreaterThan(215);
+    expect(nums[Math.floor(nums.length / 2)] as number).toBeLessThan(225);
+  });
+
+  test("曲线和音频共用同一个缓存键", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    const result = await synthesize(req, { provider, store, pitch });
+
+    expect(await pitch.get(result.key)).toEqual(result.pitch);
+  });
+
+  test("命中缓存时不重算曲线 —— 只读，不 put", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    const first = await synthesize(req, { provider, store, pitch });
+    expect(pitch.calls.put).toBe(1);
+
+    const second = await synthesize(req, { provider, store, pitch });
+
+    expect(second.cached).toBe(true);
+    expect(provider.callCount).toBe(1);
+    // 关键断言：第二次没有再写过曲线，说明没有重算过。
+    expect(pitch.calls.put).toBe(1);
+    expect(second.pitch).toEqual(first.pitch);
+  });
+
+  test("没接 pitch store 时照常合成，只是没有曲线", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    const result = await synthesize(req, { provider, store });
+
+    expect(result.cached).toBe(false);
+    expect(result.bytes).toBeGreaterThan(0);
+    expect(result.pitch).toBeUndefined();
+  });
+
+  test("音频解不出采样时不带曲线，但合成不失败", async () => {
+    // 假 provider 默认返回的是填 7 的字节，不是合法 WAV。
+    const result = await synthesize(req, { provider, store, pitch });
+
+    expect(result.bytes).toBeGreaterThan(0);
+    expect(result.pitch).toBeUndefined();
+    expect(pitch.calls.put).toBe(0);
+  });
+
+  test("曲线落盘失败也不影响合成结果", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    const failing = {
+      get: async () => null,
+      put: async () => {
+        throw new Error("磁盘满了");
+      },
+      delete: async () => undefined,
+    };
+
+    const result = await synthesize(req, { provider, store, pitch: failing });
+
+    expect(result.bytes).toBeGreaterThan(0);
+    expect(result.pitch).toBeDefined();
+  });
+
+  test("老的缓存条目只有音频、没有曲线 —— 命中时不带 pitch，也不报错", async () => {
+    provider.nextAudio = toneWav(220, 1);
+    await synthesize(req, { provider, store });
+    expect(pitch.size).toBe(0);
+
+    const second = await synthesize(req, { provider, store, pitch });
+
+    expect(second.cached).toBe(true);
+    expect(second.pitch).toBeUndefined();
   });
 });

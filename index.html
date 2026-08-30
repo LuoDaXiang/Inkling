@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      CSP：渲染层跑的是我们自己的打包产物，不加载任何远程资源。
+      `blob:` 是必需的——录音回放和范本音频都走 blob URL；
+      AudioWorklet 的处理器也是从 blob 加载的（见 lib/recorder.ts）。
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; media-src 'self' blob:; img-src 'self' data:; connect-src 'self'"
+    />
+    <title>Inkling</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/renderer/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * 调色板 —— **和 `public/app.css` 里那份逐个色值相同**。
+ *
+ * M3 的铁律是「界面长得和 M2 的截图一模一样」，而颜色是最容易在重画时
+ * 悄悄漂掉的东西：换一个色值不会报错，只是看起来「差不多」。
+ * 所以这里不是重新配色，是把同一组变量原样搬过来。
+ * 对照物在 `docs/m2-baseline/`。
+ *
+ * 两个新增的变量（`--pitch-reference` / `--pitch-recording`）在 M2 里是
+ * 直接读 `--ink-soft` 与 `--accent` 的。给它们自己的名字是因为
+ * 「范本那条线用什么颜色」是一个会单独变的决定，不该和正文次要色绑死。
+ */
+:root {
+  --ground: #f4f5f6;
+  --surface: #ffffff;
+  --surface-2: #eceef0;
+  --ink: #1a1f24;
+  --ink-soft: #5c676e;
+  --ink-faint: #8b979e;
+  --line: #d8dee0;
+  --accent: #0e6f78;
+  --bad: #9c2f2f;
+  --good: #2f6b45;
+  --warn: #a15612;
+
+  /* Tailwind 的 muted-foreground 映到这里，见 tailwind.config.js */
+  --muted-ink: #8b979e;
+  --pitch-reference: #5c676e;
+  --pitch-recording: #0e6f78;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: #101417;
+    --surface: #191e22;
+    --surface-2: #222932;
+    --ink: #e6eaec;
+    --ink-soft: #949fa6;
+    --ink-faint: #6c7a82;
+    --line: #2a3236;
+    --accent: #4ec3cd;
+    --bad: #e8807f;
+    --good: #6fc08d;
+    --warn: #df9942;
+
+    --muted-ink: #6c7a82;
+    --pitch-reference: #949fa6;
+    --pitch-recording: #4ec3cd;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font: 16px/1.6 -apple-system, "Segoe UI", "PingFang SC", sans-serif;
+}
+
+/* 焦点环统一走这一条，和 M2 一致。 */
+:where(button, select, textarea, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

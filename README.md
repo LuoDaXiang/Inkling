@@ -30,6 +30,7 @@ Inkling 只做一条链路，把它做好：
 ## 这不是什么
 
 - 不是词典、不是背单词软件、不是聊天机器人。
+  能查词，但**不附带任何词典**——见下面「词典」一节。
 - 不做视频/影视剧字幕跟读。
 - 不做多语言。只做美式英语。
 
@@ -39,21 +40,53 @@ Inkling 只做一条链路，把它做好：
 
 ```bash
 npm install
-npm test              # 1095 个离线用例，十秒内跑完，不联网
+npm test              # 离线用例，不联网
+npm run typecheck     # 三个 tsconfig：主进程 / 渲染层 / 测试
 
 cp .env.example .env.local   # 填 AZURE_SPEECH_KEY 和 AZURE_SPEECH_REGION
 npm run test:live     # 23 个真实调用，会消耗免费额度
-npm run dev           # 打开 http://localhost:5173
+npm run dev           # 起 Electron 窗口
 ```
 
 没配 `.env.local` 时 `npm run test:live` 整组跳过而不是失败，
-`npm run dev` 会在启动时明确告诉你缺什么。
+`npm run dev` 会在启动时用一个对话框明确告诉你缺什么。
+
+Inkling 是**桌面应用**（Electron + React），没有本机端口——
+主进程和界面之间走 IPC。早先那版是本地 HTTP 服务，
+换掉的理由写在 `docs/migration-plan.md`：桌面应用开一个无鉴权的本机端口，
+同机任何进程都能调 TTS 花掉你的额度。
 
 还有一个评分效度测量工具，用公开数据集核对 Azure 的分数和人类专家有多一致：
 
 ```bash
 npm run validity -- --n 150 --min-age 16
 ```
+
+## 词典
+
+**Inkling 不附带词典。** 想查词的话，导入你自己合法获得的 `.mdx`
+（连同它的 `.mdd`，如果有的话）：界面上「词典设置」→「导入词典」。
+
+这不是偷懒，是刻意的。市面上流通的那几本 —— Collins COBUILD、
+Longman LDOCE5、Oxford ODE —— **全在版权期内**。把它们打包进应用，
+或者做一个「点一下自动下载」的按钮，都是在分发受版权保护的内容。
+参考实现的做法是从自己的服务器下发 8 本、约 2.3 GB，并用 MD5 白名单校验——
+那个白名单本身就说明了它在分发什么。
+
+所以这里只做**加载器**：用户自带文件，按内容哈希存进
+`<用户数据>/dictionaries/<hash>/`，用 `@divisey/js-mdict` 解析。
+没有任何内容被分发。
+
+免费可再分发的兜底是有的（WordNet、CC-BY-SA 的 ECDICT），
+但那是另一个决定，还没做。
+
+**释义显示在一个 `sandbox` 的 iframe 里。** 释义是词典作者写的 HTML，
+不是我们的内容；直接塞进主文档，一本被做过手脚的词典就能读到整个渲染层。
+代价是词典自带的样式进不去 —— 这一版接受朴素的释义。
+
+生词本落在 `<用户数据>/words.json`，**离线可用**，格式是你能直接打开看的 JSON。
+存的只有词、时间和你自己写的一句话：释义每次现查，因为换一本词典之后，
+腌在生词本里的那份就成了上一本的残影。
 
 ## 设计原则
 
@@ -134,18 +167,28 @@ src/
   providers/            外部服务的具体实现
     tts/                Azure TTS（REST，零依赖）
     scoring/            发音评分：provider、响应解析、请求头构造
-  storage/              SQLite 连接与迁移、操作流水、业务表；音频存储（TTS 缓存 + 用户录音，各自独立，原子写）
-  http/                 本地服务：路由、静态文件
-public/                 前端页面 + 录音层（AudioWorklet，刻意做薄）
-                        contract.js / present.js 是客户端契约层，不碰 DOM
-scripts/                效度测量等一次性工具
-tests/                  1095 个离线用例，34 个文件
-  client/               客户端契约层的用例，DOM-free
+    dict/               mdict 词典：导入校验、@@@LINK 转跳、reader 缓存
+  providers/            外部服务的具体实现
+  storage/              SQLite 连接与迁移、操作流水、业务表；音频存储（TTS 缓存 + 用户录音 + 参考音高曲线，各自独立，原子写）；词典清单；生词本
+  http/                 八个传输中立的 handler。**不再是 HTTP 服务**——
+                        它们吃普通对象、吐 { status, body }，由适配器接到具体传输上
+  electron/             主进程：开窗口、组装依赖、把那八个 handler 注册成 IPC 频道
+  renderer/             React 界面
+    lib/                契约层、决定层、录音层 —— 都不碰 DOM，都有用例
+    components/         界面组件；ui/ 是 shadcn 样板 + 手写的九个
+scripts/                效度测量、测试词典生成等一次性工具
+tests/                  离线用例
+  client/               契约层与决定层的用例
+  components/           React 组件用例（jsdom）
+  fixtures/             合成的测试词典（4 个词，无版权内容）
   live/                 23 个真实调用，手动跑
 docs/
   roadmap.md            路线图、已知缺口、已核实与未核实
   api-contract.md       客户端契约 v0：75 条编号条款、测试清单、落地顺序
-  decisions.md          决策记录，43 条
+  decisions.md          决策记录
+  migration-plan.md     HTTP 服务 → Electron 的迁移计划，逐条带完成状态
+  m2-baseline/          换形态之前的界面存档，M3 的对照物
+  m3-baseline/          换形态之后的同一组截图，以及比对结论
 ```
 
 ## 路线图
@@ -186,6 +229,17 @@ Stage 1 用 Electron 把它包成桌面应用。Electron 的 renderer 本来就�
 
 它有 445 个 TS/TSX 文件、57,836 行，**2 个测试文件、6 个用例**，
 发音评分和 TTS 都没有测试。`docs/decisions.md` 里多条决定是从它的问题反推出来的。
+
+它的词典分三层，**只有中间那一层被搬了过来**：
+
+| 层 | 处置 | 原因 |
+| --- | --- | --- |
+| 预置词典 | 不碰 | 8 本全从它自己的服务器下载，均在版权期内，合计约 2.3 GB |
+| mdict 加载器 | **搬** | 用户自带文件，没有任何内容被分发，法律上干净 |
+| camdict | 不碰 | 仓库里躺着 67 MB 来源不明的剑桥词典 sqlite |
+
+搬过来的那一层也重写了四处「不报错」的缺陷，逐条记在
+`src/core/dict/mdict.ts` 的文件头里。
 
 ## 开源协议
 

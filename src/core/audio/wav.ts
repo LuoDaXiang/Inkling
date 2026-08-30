@@ -15,6 +15,14 @@ export interface WavInfo {
   channels: number;
   bitsPerSample: number;
   dataBytes: number;
+  /**
+   * `data` 块负载的起始字节偏移。
+   *
+   * RIFF 是块结构，`data` 不在固定偏移上（见 parseWav 里那段注释）。
+   * 解码器要读采样就必须知道它从哪开始，而重新走一遍块遍历就是
+   * 第二份实现——0043 的教训是同一件事不该有两份实现。
+   */
+  dataOffset: number;
   /** 秒。 */
   duration: number;
 }
@@ -119,6 +127,7 @@ export function parseWav(audio: Uint8Array): WavInfo {
     channels,
     bitsPerSample,
     dataBytes,
+    dataOffset,
     duration: dataBytes / byteRate,
   };
 }
